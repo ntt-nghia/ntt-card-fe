@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../context/ThemeContext';
-import { CATEGORIES } from '../../utils/categories';
+import { useTheme } from '@/context/ThemeContext';
+import { CATEGORIES } from '@/utils/categories';
 import styled from 'styled-components';
 
 const CategoryGrid = styled.div`

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { createGameSession } from '../../redux/slices/gameSlice';
-import { CONSEQUENCE_MODES } from '../../utils/categories';
+import { createGameSession } from '@/redux/slices/gameSlice';
+import { CONSEQUENCE_MODES } from '@/utils/categories';
 import styled from 'styled-components';
 
 const SetupForm = styled.form`

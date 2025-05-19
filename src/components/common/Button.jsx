@@ -1,5 +1,5 @@
 import styled, { css } from 'styled-components';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '@/context/ThemeContext';
 
 const StyledButton = styled.button`
   padding: ${props => props.$size === 'large' ? '0.875rem 2rem' : props.$size === 'small' ? '0.5rem 1rem' : '0.75rem 1.5rem'};

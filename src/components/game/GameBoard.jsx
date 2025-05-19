@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {useNavigate} from 'react-router-dom';
-import {fetchGameSession, fetchNextQuestion, processAction} from '../../redux/slices/gameSlice';
+import {fetchGameSession, fetchNextQuestion, processAction} from '@/redux/slices/gameSlice';
 import PlayerTracker from './PlayerTracker';
 import QuestionCard from './QuestionCard';
 import GameSummary from './GameSummary';

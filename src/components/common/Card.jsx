@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '@/context/ThemeContext';
 
 const StyledCard = styled.div`
   background-color: white;

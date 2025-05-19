@@ -1,11 +1,13 @@
 import { createContext, useState, useContext, useEffect } from 'react';
-import { colleagueTheme } from '../styles/themes/colleague';
-import { friendTheme } from '../styles/themes/friend';
-import { coupleTheme } from '../styles/themes/couple';
-import { intimateTheme } from '../styles/themes/intimate';
+import { colleagueTheme } from '@/styles/themes/colleague';
+import { friendTheme } from '@/styles/themes/friend';
+import { coupleTheme } from '@/styles/themes/couple';
+import { intimateTheme } from '@/styles/themes/intimate';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const ThemeContext = createContext(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider = ({ children }) => {

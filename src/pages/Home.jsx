@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useTheme } from '@/context/ThemeContext';
 import Button from '../components/common/Button';
-import { CATEGORIES } from '../utils/categories';
+import { CATEGORIES } from '@/utils/categories';
 
 const Hero = styled.div`
   display: flex;

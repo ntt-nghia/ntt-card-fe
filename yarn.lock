@@ -346,6 +346,11 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
+"@eslint/js@^9.27.0":
+  version "9.27.0"
+  resolved "https://registry.npmjs.org/@eslint/js/-/js-9.27.0.tgz"
+  integrity sha512-G5JD9Tu5HJEu4z2Uo4aHY2sLV64B7CDMXxFzqzjl3NKd6RVzSXNoE80jk7Y0lJkTTkjiIhBAqmlYwjuBY3tvpA==
+
 "@eslint/js@8.57.1":
   version "8.57.1"
   resolved "https://registry.npmjs.org/@eslint/js/-/js-8.57.1.tgz"
@@ -1766,6 +1771,11 @@ eslint-plugin-react-hooks@^4.6.0:
   resolved "https://registry.npmjs.org/eslint-plugin-react-hooks/-/eslint-plugin-react-hooks-4.6.2.tgz"
   integrity sha512-QzliNJq4GinDBcD8gPB5v0wh6g8q3SUi6EFF0x8N/BL9PoVs0atuGc47ozMRyOWAKdwaZ5OnbOEa3WR+dSGKuQ==
 
+eslint-plugin-react-refresh@^0.4.20:
+  version "0.4.20"
+  resolved "https://registry.npmjs.org/eslint-plugin-react-refresh/-/eslint-plugin-react-refresh-0.4.20.tgz"
+  integrity sha512-XpbHQ2q5gUF8BGOX4dHe+71qoirYMhApEPZ7sfhF/dNnOF1UXnCMGZf79SFTBO7Bz5YEIT4TMieSlJBWhP9WBA==
+
 eslint-plugin-react@^7.33.2:
   version "7.37.5"
   resolved "https://registry.npmjs.org/eslint-plugin-react/-/eslint-plugin-react-7.37.5.tgz"
@@ -1803,7 +1813,7 @@ eslint-visitor-keys@^3.4.1, eslint-visitor-keys@^3.4.3:
   resolved "https://registry.npmjs.org/eslint-visitor-keys/-/eslint-visitor-keys-3.4.3.tgz"
   integrity sha512-wpc+LXeiyiisxPlEkUzU6svyS1frIO3Mgxj1fdy7Pm8Ygzguax2N3Fa/D/ag1WqbOprdI+uY6wMUl8/a2G+iag==
 
-"eslint@^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9.7", "eslint@^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0", "eslint@^6.0.0 || ^7.0.0 || >=8.0.0", eslint@^8.55.0:
+"eslint@^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9.7", "eslint@^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0", "eslint@^6.0.0 || ^7.0.0 || >=8.0.0", eslint@^8.55.0, eslint@>=8.40:
   version "8.57.1"
   resolved "https://registry.npmjs.org/eslint/-/eslint-8.57.1.tgz"
   integrity sha512-ypowyDxpVSYpkXr9WPv2PAZCtNip1Mv5KTW0SCurXv/9iOpcrH9PaqUElksqEB6pChqHGDRCFTyrZlGhnLNGiA==
@@ -2126,6 +2136,11 @@ globals@^13.19.0:
   integrity sha512-AhO5QUcj8llrbG09iWhPU2B204J1xnPeL8kQmVorSsy+Sjj1sk8gIyh6cUocGmH4L0UuhAJy+hJMRA4mgA4mFQ==
   dependencies:
     type-fest "^0.20.2"
+
+globals@^16.1.0:
+  version "16.1.0"
+  resolved "https://registry.npmjs.org/globals/-/globals-16.1.0.tgz"
+  integrity sha512-aibexHNbb/jiUSObBgpHLj+sIuUmJnYcgXBlrfsiDZ9rt4aF2TFRbyLgZ2iFQuVZ1K5Mx3FVkbKRSgKrbK3K2g==
 
 globalthis@^1.0.4:
   version "1.0.4"
