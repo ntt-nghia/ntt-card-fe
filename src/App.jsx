@@ -5,7 +5,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {authActions} from '@store/auth/authSlice';
 import {authSelectors} from '@store/auth/authSelectors';
 import {Layout} from '@components/common/Layout';
-import ProtectedRoute from '@components/auth/ProtectedRoute/ProtectedRoute.js';
+import ProtectedRoute from '@components/auth/ProtectedRoute/ProtectedRoute.jsx';
 import Loading from '@components/common/Loading';
 
 // Pages

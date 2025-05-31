@@ -28,7 +28,7 @@ export const SESSION_STATUS = {
   COMPLETED: 'completed'
 };
 
-export const DECK_TYPES = {
+export const DECK_TIERS = {
   FREE: 'FREE',
   PREMIUM: 'PREMIUM'
 };

@@ -1,11 +1,12 @@
 import React, {useEffect, useState} from 'react';
 import {Helmet} from 'react-helmet-async';
-import {Edit3, TrendingUp, User} from 'lucide-react';
+import {User, Settings, TrendingUp, Clock, Star, Edit3, Globe} from 'lucide-react';
 
 import {useAuth} from '@hooks/useAuth';
 import {useUser} from '@hooks/useUser';
 import Button from '@components/common/Button';
 import Loading from '@components/common/Loading';
+import NotFound from "@pages/NotFound/index.js";
 
 const Profile = () => {
   const {user, updateProfile: updateAuthProfile} = useAuth();
@@ -168,3 +169,6 @@ const Profile = () => {
       </div>
     </>)
 }
+
+export default Profile;
+

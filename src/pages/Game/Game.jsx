@@ -3,17 +3,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
   ArrowLeft,
-  SkipForward,
-  CheckCircle,
   RefreshCw,
-  Users,
-  TrendingUp,
   X
 } from 'lucide-react';
 
 import { useGame } from '@hooks/useGame';
 import Button from '@components/common/Button';
 import Loading from '@components/common/Loading';
+import CardDisplay from '@components/game/CardDisplay/CardDisplay';
+import SessionProgress from '@components/game/SessionProgress/SessionProgress';
 
 const Game = () => {
   const { sessionId } = useParams();
@@ -126,9 +124,6 @@ const Game = () => {
                   <h1 className="text-lg font-semibold text-gray-900 capitalize">
                     {currentSession.relationshipType?.replace('_', ' ')} Session
                   </h1>
-                  <p className="text-sm text-gray-600">
-                    Connection Level {currentLevel} • {cardsRemaining} cards remaining
-                  </p>
                 </div>
               </div>
 
@@ -142,18 +137,14 @@ const Game = () => {
               </Button>
             </div>
 
-            {/* Progress Bar */}
+            {/* Session Progress Component */}
             <div className="mt-4">
-              <div className="flex justify-between text-sm text-gray-600 mb-2">
-                <span>Progress</span>
-                <span>{Math.round(sessionProgress.progress)}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-primary-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${sessionProgress.progress}%` }}
-                />
-              </div>
+              <SessionProgress
+                currentLevel={currentLevel}
+                cardsRemaining={cardsRemaining}
+                sessionProgress={sessionProgress}
+                statistics={currentSession}
+              />
             </div>
           </div>
         </div>
@@ -170,74 +161,13 @@ const Game = () => {
         {/* Main Game Area */}
         <div className="max-w-4xl mx-auto px-4 py-8 mobile-safe-bottom">
           {currentCard ? (
-            /* Card Display */
-            <div className="text-center">
-              <div className="card p-8 mb-8 max-w-2xl mx-auto">
-                <div className="mb-6">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 mb-4">
-                    {currentCard.type?.charAt(0).toUpperCase() + currentCard.type?.slice(1)} Card
-                  </span>
-                  <h2 className="text-2xl font-heading font-bold text-gray-900 mb-4 text-balance">
-                    {currentCard.displayContent || currentCard.content}
-                  </h2>
-                  {currentCard.categories && currentCard.categories.length > 0 && (
-                    <div className="flex flex-wrap justify-center gap-2">
-                      {currentCard.categories.map((category, index) => (
-                        <span
-                          key={index}
-                          className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full"
-                        >
-                          {category}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Card Actions */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button
-                    variant="success"
-                    size="lg"
-                    leftIcon={<CheckCircle className="w-5 h-5" />}
-                    onClick={handleCompleteCard}
-                    disabled={isLoading}
-                    className="btn-touch"
-                  >
-                    Complete
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    leftIcon={<SkipForward className="w-5 h-5" />}
-                    onClick={handleSkipCard}
-                    disabled={isLoading}
-                    className="btn-touch"
-                  >
-                    Skip
-                  </Button>
-                </div>
-              </div>
-
-              {/* Level Information */}
-              <div className="text-center">
-                <p className="text-sm text-gray-600 mb-2">
-                  Connection Level {currentLevel} of 4
-                </p>
-                <div className="flex justify-center space-x-2">
-                  {[1, 2, 3, 4].map((level) => (
-                    <div
-                      key={level}
-                      className={`w-3 h-3 rounded-full ${
-                        level <= currentLevel
-                          ? 'bg-primary-600'
-                          : 'bg-gray-300'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
+            /* Card Display Component */
+            <CardDisplay
+              card={currentCard}
+              onComplete={handleCompleteCard}
+              onSkip={handleSkipCard}
+              isLoading={isLoading}
+            />
           ) : (
             /* Draw Card Interface */
             <div className="text-center">
@@ -264,51 +194,9 @@ const Game = () => {
                 >
                   {isDrawing ? 'Drawing Card...' : 'Draw Card'}
                 </Button>
-
-                {cardsRemaining <= 5 && cardsRemaining > 0 && (
-                  <p className="text-sm text-warning-600 mt-4">
-                    Only {cardsRemaining} cards remaining in this session
-                  </p>
-                )}
-
-                {cardsRemaining === 0 && (
-                  <div className="mt-6 p-4 bg-success-50 border border-success-200 rounded-md">
-                    <p className="text-success-700 font-medium">
-                      🎉 Congratulations! You've completed all available cards.
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
           )}
-
-          {/* Session Stats */}
-          <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary-600">
-                {sessionProgress.completed}
-              </div>
-              <div className="text-sm text-gray-600">Completed</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-600">
-                {currentSession.skippedCards?.length || 0}
-              </div>
-              <div className="text-sm text-gray-600">Skipped</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-success-600">
-                {currentLevel}
-              </div>
-              <div className="text-sm text-gray-600">Level</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-warning-600">
-                {cardsRemaining}
-              </div>
-              <div className="text-sm text-gray-600">Remaining</div>
-            </div>
-          </div>
         </div>
 
         {/* End Session Confirmation Modal */}
