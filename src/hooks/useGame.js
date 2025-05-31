@@ -1,106 +1,82 @@
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  fetchGameSession,
-  fetchNextQuestion,
-  processAction
-} from '@/redux/slices/gameSlice';
+import { useSelector, useDispatch } from 'react-redux';
+import { gameSelectors } from '@store/game/gameSelectors';
+import { gameActions } from '@store/game/gameSlice';
 
-export const useGame = (gameId) => {
+export const useGame = () => {
   const dispatch = useDispatch();
-  const {
-    gameSession,
-    currentQuestion,
-    currentPlayer,
-    loading,
-    error
-  } = useSelector((state) => state.game);
+  const gameState = useSelector(gameSelectors.getGameState);
+  const currentSession = useSelector(gameSelectors.getCurrentSession);
+  const currentCard = useSelector(gameSelectors.getCurrentCard);
+  const isSessionActive = useSelector(gameSelectors.getIsSessionActive);
+  const currentLevel = useSelector(gameSelectors.getCurrentLevel);
+  const cardsRemaining = useSelector(gameSelectors.getCardsRemaining);
+  const sessionStats = useSelector(gameSelectors.getSessionStats);
+  const isLoading = useSelector(gameSelectors.getIsLoading);
+  const isDrawing = useSelector(gameSelectors.getIsDrawing);
+  const error = useSelector(gameSelectors.getError);
 
-  const [isGameOver, setIsGameOver] = useState(false);
-
-  useEffect(() => {
-    if (gameId) {
-      dispatch(fetchGameSession(gameId));
-    }
-  }, [dispatch, gameId]);
-
-  useEffect(() => {
-    if (gameSession?.status === 'COMPLETED') {
-      setIsGameOver(true);
-    } else {
-      setIsGameOver(false);
-    }
-  }, [gameSession]);
-
-  const getNextQuestion = async () => {
-    if (!gameId) return;
-
-    try {
-      await dispatch(fetchNextQuestion(gameId)).unwrap();
-      return true;
-    } catch (error) {
-      console.error('Failed to fetch next question:', error);
-      return false;
-    }
+  const startSession = (sessionData) => {
+    dispatch(gameActions.startSessionRequest(sessionData));
   };
 
-  const answerQuestion = async (questionId) => {
-    if (!gameId || !questionId) return;
-
-    try {
-      const result = await dispatch(processAction({
-        gameId,
-        action: 'ANSWER',
-        questionId
-      })).unwrap();
-
-      // If the game is still active, get the next question
-      if (result.gameStatus === 'ACTIVE') {
-        await getNextQuestion();
-      } else if (result.gameStatus === 'COMPLETED') {
-        setIsGameOver(true);
-      }
-
-      return result;
-    } catch (error) {
-      console.error('Failed to process action:', error);
-      return null;
-    }
+  const getSession = (sessionId) => {
+    dispatch(gameActions.getSessionRequest({ sessionId }));
   };
 
-  const skipQuestion = async (questionId) => {
-    if (!gameId || !questionId) return;
-
-    try {
-      const result = await dispatch(processAction({
-        gameId,
-        action: 'SKIP',
-        questionId
-      })).unwrap();
-
-      // If the game is still active, get the next question
-      if (result.gameStatus === 'ACTIVE') {
-        await getNextQuestion();
-      } else if (result.gameStatus === 'COMPLETED') {
-        setIsGameOver(true);
-      }
-
-      return result;
-    } catch (error) {
-      console.error('Failed to process action:', error);
-      return null;
-    }
+  const drawCard = (sessionId) => {
+    dispatch(gameActions.drawCardRequest({ sessionId }));
   };
+
+  const completeCard = (sessionId, cardId) => {
+    dispatch(gameActions.completeCardRequest({ sessionId, cardId }));
+  };
+
+  const skipCard = (sessionId, cardId) => {
+    dispatch(gameActions.skipCardRequest({ sessionId, cardId }));
+  };
+
+  const endSession = (sessionId) => {
+    dispatch(gameActions.endSessionRequest({ sessionId }));
+  };
+
+  const getSessionStats = (sessionId) => {
+    dispatch(gameActions.getSessionStatsRequest({ sessionId }));
+  };
+
+  const clearSession = () => {
+    dispatch(gameActions.clearSession());
+  };
+
+  const clearError = () => {
+    dispatch(gameActions.clearError());
+  };
+
+  // Computed values
+  const sessionProgress = useSelector(gameSelectors.getSessionProgress);
 
   return {
-    gameSession,
-    currentQuestion,
-    currentPlayer,
-    loading,
+    // State
+    gameState,
+    currentSession,
+    currentCard,
+    isSessionActive,
+    currentLevel,
+    cardsRemaining,
+    sessionStats,
+    isLoading,
+    isDrawing,
     error,
-    isGameOver,
-    getNextQuestion,
-    answerQuestion,
-    skipQuestion
+    sessionProgress,
+
+    // Actions
+    startSession,
+    getSession,
+    drawCard,
+    completeCard,
+    skipCard,
+    endSession,
+    getSessionStats,
+    clearSession,
+    clearError,
   };
 };

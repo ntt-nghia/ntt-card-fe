@@ -1,29 +1,92 @@
-import { Routes, Route } from 'react-router-dom';
-import { ThemeProvider } from './context/ThemeContext';
-import Header from './components/layout/Header';
-import Footer from './components/layout/Footer';
-import PageContainer from './components/layout/PageContainer';
-import Home from './pages/Home';
-import CategorySelect from './pages/CategorySelect';
-import GameSetupPage from './pages/GameSetupPage';
-import GamePlayPage from './pages/GamePlayPage';
-import About from './pages/About';
+import React, {useEffect} from 'react';
+import {Route, Routes} from 'react-router-dom';
+import {useDispatch, useSelector} from 'react-redux';
+
+import {authActions} from '@store/auth/authSlice';
+import {authSelectors} from '@store/auth/authSelectors';
+import {Layout} from '@components/common/Layout';
+import ProtectedRoute from '@components/auth/ProtectedRoute/ProtectedRoute.js';
+import Loading from '@components/common/Loading';
+
+// Pages
+import Home from '@pages/Home/Home.jsx';
+import Login from '@pages/Login';
+import Register from '@pages/Register';
+import Dashboard from '@pages/Dashboard';
+import Game from '@pages/Game/Game.jsx';
+import Profile from '@pages/Profile';
+import Admin from '@pages/Admin';
+import NotFound from '@pages/NotFound';
 
 function App() {
+  const dispatch = useDispatch();
+  const {isLoading, isAuthenticated} = useSelector(authSelectors.getAuthState);
+
+  useEffect(() => {
+    // Check for existing auth token on app startup
+    dispatch(authActions.checkAuthState());
+  }, [dispatch]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loading size="large"/>
+      </div>
+    );
+  }
+
   return (
-    <ThemeProvider>
-      <Header />
-      <PageContainer>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/categories" element={<CategorySelect />} />
-          <Route path="/setup/:category" element={<GameSetupPage />} />
-          <Route path="/play/:gameId" element={<GamePlayPage />} />
-          <Route path="/about" element={<About />} />
-        </Routes>
-      </PageContainer>
-      <Footer />
-    </ThemeProvider>
+    <div className="min-h-screen bg-gray-50">
+      <Routes>
+        <Route path="/" element={<Layout/>}>
+          <Route index element={<Home/>}/>
+          <Route path="login" element={<Login/>}/>
+          <Route path="register" element={<Register/>}/>
+        </Route>
+
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Dashboard/>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/game/:sessionId"
+          element={
+            <ProtectedRoute>
+              <Game/>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Profile/>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/*"
+          element={
+            <ProtectedRoute requireAdmin>
+              <Admin/>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="*" element={<NotFound/>}/>
+      </Routes>
+    </div>
   );
 }
 
