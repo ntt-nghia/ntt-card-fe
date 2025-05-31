@@ -29,39 +29,39 @@ const Header = () => {
           </Link>
 
           {/* Navigation */}
-          <nav className="hidden md:flex space-x-8">
-            {isAuthenticated ? (
-              <>
-                <Link
-                  to="/dashboard"
-                  className="text-gray-600 hover:text-primary-600 transition-colors"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  to="/profile"
-                  className="text-gray-600 hover:text-primary-600 transition-colors"
-                >
-                  Profile
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="text-gray-600 hover:text-primary-600 transition-colors"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/register"
-                  className="text-gray-600 hover:text-primary-600 transition-colors"
-                >
-                  Register
-                </Link>
-              </>
-            )}
-          </nav>
+          {/*<nav className="hidden md:flex space-x-8">*/}
+          {/*  {isAuthenticated ? (*/}
+          {/*    <>*/}
+          {/*      <Link*/}
+          {/*        to="/dashboard"*/}
+          {/*        className="text-gray-600 hover:text-primary-600 transition-colors"*/}
+          {/*      >*/}
+          {/*        Dashboard*/}
+          {/*      </Link>*/}
+          {/*      <Link*/}
+          {/*        to="/profile"*/}
+          {/*        className="text-gray-600 hover:text-primary-600 transition-colors"*/}
+          {/*      >*/}
+          {/*        Profile*/}
+          {/*      </Link>*/}
+          {/*    </>*/}
+          {/*  ) : (*/}
+          {/*    <>*/}
+          {/*      <Link*/}
+          {/*        to="/login"*/}
+          {/*        className="text-gray-600 hover:text-primary-600 transition-colors"*/}
+          {/*      >*/}
+          {/*        Login*/}
+          {/*      </Link>*/}
+          {/*      <Link*/}
+          {/*        to="/register"*/}
+          {/*        className="text-gray-600 hover:text-primary-600 transition-colors"*/}
+          {/*      >*/}
+          {/*        Register*/}
+          {/*      </Link>*/}
+          {/*    </>*/}
+          {/*  )}*/}
+          {/*</nav>*/}
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">

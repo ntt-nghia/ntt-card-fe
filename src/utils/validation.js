@@ -1,4 +1,4 @@
-import { RELATIONSHIP_TYPES, CARD_TYPES, DECK_TYPES } from './constants';
+import { RELATIONSHIP_TYPES, CARD_TYPES, DECK_TIERS } from './constants';
 
 /**
  * Email validation regex pattern
@@ -250,7 +250,7 @@ export const validateDeckTier = (deckTier) => {
 
   if (!deckTier) {
     errors.push('Deck tier is required');
-  } else if (!Object.values(DECK_TYPES).includes(deckTier)) {
+  } else if (!Object.values(DECK_TIERS).includes(deckTier)) {
     errors.push('Invalid deck tier');
   }
 
@@ -416,11 +416,11 @@ export const validateUrl = (url, required = false) => {
 export const validatePrice = (price, tier) => {
   const errors = [];
 
-  if (tier === DECK_TYPES.FREE) {
+  if (tier === DECK_TIERS.FREE) {
     if (price !== 0 && price !== undefined && price !== null) {
       errors.push('Free decks must have a price of 0');
     }
-  } else if (tier === DECK_TYPES.PREMIUM) {
+  } else if (tier === DECK_TIERS.PREMIUM) {
     if (price === null || price === undefined) {
       errors.push('Premium decks must have a price');
     } else if (typeof price !== 'number') {
