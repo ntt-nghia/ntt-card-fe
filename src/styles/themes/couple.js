@@ -5,15 +5,15 @@ export const coupleTheme = {
     accent: '#FF69B4',
     background: '#ffffff',
     text: '#333333',
-    border: '#D8BFD8'
+    border: '#D8BFD8',
   },
   typography: {
-    fontFamily: '"Playfair Display", "Merriweather", serif'
+    fontFamily: '"Playfair Display", "Merriweather", serif',
   },
   spacing: {
-    card: '1.5rem'
+    card: '1.5rem',
   },
   borderRadius: '0.75rem',
   boxShadow: '0 6px 12px rgba(138, 43, 226, 0.15)',
-  transition: '0.3s ease'
+  transition: '0.3s ease',
 };

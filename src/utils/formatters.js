@@ -31,15 +31,25 @@ export const formatDuration = (milliseconds, options = {}) => {
   }
 
   if (remainingHours > 0) {
-    parts.push(short ? `${remainingHours}h` : `${remainingHours} hour${remainingHours !== 1 ? 's' : ''}`);
+    parts.push(
+      short ? `${remainingHours}h` : `${remainingHours} hour${remainingHours !== 1 ? 's' : ''}`
+    );
   }
 
   if (remainingMinutes > 0) {
-    parts.push(short ? `${remainingMinutes}m` : `${remainingMinutes} minute${remainingMinutes !== 1 ? 's' : ''}`);
+    parts.push(
+      short
+        ? `${remainingMinutes}m`
+        : `${remainingMinutes} minute${remainingMinutes !== 1 ? 's' : ''}`
+    );
   }
 
   if (includeSeconds && remainingSeconds > 0 && days === 0 && hours === 0) {
-    parts.push(short ? `${remainingSeconds}s` : `${remainingSeconds} second${remainingSeconds !== 1 ? 's' : ''}`);
+    parts.push(
+      short
+        ? `${remainingSeconds}s`
+        : `${remainingSeconds} second${remainingSeconds !== 1 ? 's' : ''}`
+    );
   }
 
   if (parts.length === 0) {
@@ -78,7 +88,7 @@ export const formatDate = (date, options = {}) => {
     short: { dateStyle: 'short' },
     medium: { dateStyle: 'medium' },
     long: { dateStyle: 'long' },
-    full: { dateStyle: 'full' }
+    full: { dateStyle: 'full' },
   };
 
   const baseOptions = formatOptions[format] || formatOptions.medium;
@@ -145,7 +155,7 @@ export const formatNumber = (number, options = {}) => {
     currency = 'USD',
     minimumFractionDigits,
     maximumFractionDigits,
-    compact = false
+    compact = false,
   } = options;
 
   const formatOptions = {
@@ -153,7 +163,7 @@ export const formatNumber = (number, options = {}) => {
     ...(style === 'currency' && { currency }),
     ...(minimumFractionDigits !== undefined && { minimumFractionDigits }),
     ...(maximumFractionDigits !== undefined && { maximumFractionDigits }),
-    ...(compact && { notation: 'compact' })
+    ...(compact && { notation: 'compact' }),
   };
 
   return new Intl.NumberFormat('en-US', formatOptions).format(number);
@@ -178,7 +188,7 @@ export const formatPercentage = (value, options = {}) => {
   return formatNumber(percentage, {
     style: 'percent',
     minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals
+    maximumFractionDigits: decimals,
   });
 };
 
@@ -197,7 +207,7 @@ export const formatCurrency = (amount, currency = 'USD', options = {}) => {
   return formatNumber(amount, {
     style: 'currency',
     currency,
-    ...options
+    ...options,
   });
 };
 
@@ -217,7 +227,7 @@ export const formatRelationshipType = (relationshipType, options = {}) => {
     [RELATIONSHIP_TYPES.COLLEAGUES]: plural ? 'colleagues' : 'colleague',
     [RELATIONSHIP_TYPES.NEW_COUPLES]: plural ? 'new couples' : 'new couple',
     [RELATIONSHIP_TYPES.ESTABLISHED_COUPLES]: plural ? 'established couples' : 'established couple',
-    [RELATIONSHIP_TYPES.FAMILY]: 'family'
+    [RELATIONSHIP_TYPES.FAMILY]: 'family',
   };
 
   let displayName = typeMap[relationshipType] || relationshipType;
@@ -245,25 +255,19 @@ export const formatCardStatistics = (statistics) => {
       timesPlayed: '0',
       skipRate: '0%',
       rating: 'Not rated',
-      effectiveness: '0%'
+      effectiveness: '0%',
     };
   }
 
-  const {
-    timesDrawn = 0,
-    skipRate = 0,
-    averageRating = 0
-  } = statistics;
+  const { timesDrawn = 0, skipRate = 0, averageRating = 0 } = statistics;
 
   const effectiveness = timesDrawn > 0 ? (1 - skipRate) * 100 : 0;
 
   return {
     timesPlayed: formatNumber(timesDrawn, { compact: true }),
     skipRate: formatPercentage(skipRate, { isDecimal: true, decimals: 1 }),
-    rating: averageRating > 0
-      ? `${averageRating.toFixed(1)}/5`
-      : 'Not rated',
-    effectiveness: formatPercentage(effectiveness, { isDecimal: false, decimals: 1 })
+    rating: averageRating > 0 ? `${averageRating.toFixed(1)}/5` : 'Not rated',
+    effectiveness: formatPercentage(effectiveness, { isDecimal: false, decimals: 1 }),
   };
 };
 
@@ -278,22 +282,17 @@ export const formatSessionStatistics = (statistics) => {
       duration: '0 minutes',
       completionRate: '0%',
       cardsCompleted: '0',
-      averageLevel: '1'
+      averageLevel: '1',
     };
   }
 
-  const {
-    duration = 0,
-    completionRate = 0,
-    completedCards = 0,
-    averageLevel = 1
-  } = statistics;
+  const { duration = 0, completionRate = 0, completedCards = 0, averageLevel = 1 } = statistics;
 
   return {
     duration: formatDuration(duration, { short: false, includeSeconds: false }),
     completionRate: formatPercentage(completionRate, { isDecimal: true, decimals: 1 }),
     cardsCompleted: formatNumber(completedCards),
-    averageLevel: averageLevel.toFixed(1)
+    averageLevel: averageLevel.toFixed(1),
   };
 };
 
@@ -308,7 +307,7 @@ export const formatUserStatistics = (userStats) => {
       totalSessions: '0',
       averageDuration: '0 minutes',
       favoriteType: 'None',
-      totalPlayTime: '0 hours'
+      totalPlayTime: '0 hours',
     };
   }
 
@@ -316,7 +315,7 @@ export const formatUserStatistics = (userStats) => {
     totalSessions = 0,
     averageSessionDuration = 0,
     favoriteRelationshipType,
-    relationshipTypeUsage = {}
+    relationshipTypeUsage = {},
   } = userStats;
 
   // Calculate total play time
@@ -324,11 +323,14 @@ export const formatUserStatistics = (userStats) => {
 
   return {
     totalSessions: formatNumber(totalSessions),
-    averageDuration: formatDuration(averageSessionDuration, { short: false, includeSeconds: false }),
+    averageDuration: formatDuration(averageSessionDuration, {
+      short: false,
+      includeSeconds: false,
+    }),
     favoriteType: favoriteRelationshipType
       ? formatRelationshipType(favoriteRelationshipType, { capitalize: true })
       : 'None',
-    totalPlayTime: formatDuration(totalPlayTime, { short: false, includeSeconds: false })
+    totalPlayTime: formatDuration(totalPlayTime, { short: false, includeSeconds: false }),
   };
 };
 
@@ -343,9 +345,7 @@ export const formatFileSize = (bytes, binary = true) => {
     return '0 B';
   }
 
-  const units = binary
-    ? ['B', 'KiB', 'MiB', 'GiB', 'TiB']
-    : ['B', 'KB', 'MB', 'GB', 'TB'];
+  const units = binary ? ['B', 'KiB', 'MiB', 'GiB', 'TiB'] : ['B', 'KB', 'MB', 'GB', 'TB'];
 
   const base = binary ? 1024 : 1000;
   const index = Math.floor(Math.log(bytes) / Math.log(base));

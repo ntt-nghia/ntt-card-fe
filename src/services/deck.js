@@ -75,7 +75,7 @@ export const deckService = {
   searchDecks: async (query, filters = {}) => {
     return await deckService.getAllDecks({
       ...filters,
-      search: query
+      search: query,
     });
   },
 };

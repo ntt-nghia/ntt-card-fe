@@ -24,7 +24,7 @@ export const calculateSessionProgress = (session) => {
     completed: completedCount,
     total: totalCards,
     remaining,
-    drawn: drawnCount
+    drawn: drawnCount,
   };
 };
 
@@ -42,7 +42,7 @@ export const calculateSessionStats = (session) => {
       completionRate: 0,
       skipRate: 0,
       averageLevel: 0,
-      duration: 0
+      duration: 0,
     };
   }
 
@@ -65,7 +65,7 @@ export const calculateSessionStats = (session) => {
     completionRate: Math.round(completionRate * 100) / 100,
     skipRate: Math.round(skipRate * 100) / 100,
     averageLevel: session.currentLevel || 1,
-    duration: Math.max(0, duration)
+    duration: Math.max(0, duration),
   };
 };
 
@@ -92,7 +92,7 @@ export const checkLevelProgression = (session, cardsPerLevel = 5) => {
     currentLevel,
     nextLevel: targetLevel,
     progressToNext: completedCount % cardsPerLevel,
-    cardsNeededForNext: cardsPerLevel - (completedCount % cardsPerLevel)
+    cardsNeededForNext: cardsPerLevel - (completedCount % cardsPerLevel),
   };
 };
 
@@ -110,7 +110,7 @@ export const filterCards = (cards, filters = {}) => {
     return [];
   }
 
-  return cards.filter(card => {
+  return cards.filter((card) => {
     // Connection level filter
     if (filters.maxLevel && card.connectionLevel > filters.maxLevel) {
       return false;
@@ -161,9 +161,7 @@ export const selectRandomCard = (availableCards, options = {}) => {
 
   // Prefer cards of specific level if specified
   if (preferredLevel) {
-    const preferredCards = candidateCards.filter(card =>
-      card.connectionLevel === preferredLevel
-    );
+    const preferredCards = candidateCards.filter((card) => card.connectionLevel === preferredLevel);
     if (preferredCards.length > 0) {
       candidateCards = preferredCards;
     }
@@ -176,9 +174,7 @@ export const selectRandomCard = (availableCards, options = {}) => {
   }
 
   // Weighted selection based on theta values
-  const totalWeight = candidateCards.reduce((sum, card) =>
-    sum + (card.theta || 0.5), 0
-  );
+  const totalWeight = candidateCards.reduce((sum, card) => sum + (card.theta || 0.5), 0);
 
   if (totalWeight === 0) {
     // Fallback to simple random if no weights
@@ -190,7 +186,7 @@ export const selectRandomCard = (availableCards, options = {}) => {
   let currentWeight = 0;
 
   for (const card of candidateCards) {
-    currentWeight += (card.theta || 0.5);
+    currentWeight += card.theta || 0.5;
     if (randomValue <= currentWeight) {
       return card;
     }
@@ -253,7 +249,7 @@ export const validateSessionConfig = (config) => {
   return {
     isValid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   };
 };
 
@@ -267,7 +263,7 @@ export const calculateCardEffectiveness = (card) => {
     return {
       effectiveness: 0,
       popularity: 0,
-      quality: 0
+      quality: 0,
     };
   }
 
@@ -284,14 +280,12 @@ export const calculateCardEffectiveness = (card) => {
 
   // Calculate quality (based on rating and theta)
   const theta = card.theta || 0.5;
-  const quality = avgRating > 0
-    ? (avgRating / 5) * 100
-    : theta * 100;
+  const quality = avgRating > 0 ? (avgRating / 5) * 100 : theta * 100;
 
   return {
     effectiveness: Math.round(effectiveness),
     popularity: Math.round(popularity),
-    quality: Math.round(quality)
+    quality: Math.round(quality),
   };
 };
 
@@ -310,21 +304,20 @@ export const generateSessionRecommendations = (userStats, availableDecks) => {
   const typeUsage = userStats.relationshipTypeUsage || {};
 
   // Recommend based on favorite type
-  let recommendations = availableDecks.filter(deck =>
-    deck.relationshipType === favoriteType &&
-    (deck.tier === 'FREE' || deck.isUnlocked)
+  let recommendations = availableDecks.filter(
+    (deck) => deck.relationshipType === favoriteType && (deck.tier === 'FREE' || deck.isUnlocked)
   );
 
   // If no favorites, recommend popular decks
   if (recommendations.length === 0) {
     recommendations = availableDecks
-      .filter(deck => deck.tier === 'FREE' || deck.isUnlocked)
+      .filter((deck) => deck.tier === 'FREE' || deck.isUnlocked)
       .sort((a, b) => (b.statistics?.sessionsPlayed || 0) - (a.statistics?.sessionsPlayed || 0))
       .slice(0, 3);
   }
 
   // Ensure we don't recommend too many
-  return recommendations.slice(0, 3).map(deck => deck.id);
+  return recommendations.slice(0, 3).map((deck) => deck.id);
 };
 
 /**
@@ -342,8 +335,8 @@ export const buildCardPool = (selectedDeckIds, allDecks, userUnlockedDecks = [],
 
   const cardIds = new Set();
 
-  selectedDeckIds.forEach(deckId => {
-    const deck = allDecks.find(d => d.id === deckId);
+  selectedDeckIds.forEach((deckId) => {
+    const deck = allDecks.find((d) => d.id === deckId);
     if (!deck) return;
 
     // Check access

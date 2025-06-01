@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import {
-  ArrowLeft,
-  RefreshCw,
-  X
-} from 'lucide-react';
+import { ArrowLeft, RefreshCw, X } from 'lucide-react';
 
 import { useGame } from '@hooks/useGame';
 import Button from '@components/common/Button';
@@ -31,7 +27,7 @@ const Game = () => {
     completeCard,
     skipCard,
     endSession,
-    clearError
+    clearError,
   } = useGame();
 
   const [showEndConfirm, setShowEndConfirm] = useState(false);
@@ -79,7 +75,7 @@ const Game = () => {
 
   if (isLoading && !currentSession) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <Loading size="large" text="Loading game session..." />
       </div>
     );
@@ -87,13 +83,11 @@ const Game = () => {
 
   if (!currentSession) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Session Not Found</h2>
-          <p className="text-gray-600 mb-6">The game session you're looking for doesn't exist.</p>
-          <Button onClick={() => navigate('/dashboard')}>
-            Return to Dashboard
-          </Button>
+          <h2 className="mb-4 text-2xl font-bold text-gray-900">Session Not Found</h2>
+          <p className="mb-6 text-gray-600">The game session you're looking for doesn't exist.</p>
+          <Button onClick={() => navigate('/dashboard')}>Return to Dashboard</Button>
         </div>
       </div>
     );
@@ -106,22 +100,22 @@ const Game = () => {
         <meta name="description" content="Active game session" />
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 mobile-full-height">
+      <div className="mobile-full-height min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50">
         {/* Header */}
-        <div className="bg-white shadow-sm border-b border-gray-200 safe-area-top">
-          <div className="max-w-4xl mx-auto px-4 py-4">
+        <div className="safe-area-top border-b border-gray-200 bg-white shadow-sm">
+          <div className="mx-auto max-w-4xl px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <Button
                   variant="ghost"
                   size="sm"
-                  leftIcon={<ArrowLeft className="w-4 h-4" />}
+                  leftIcon={<ArrowLeft className="h-4 w-4" />}
                   onClick={() => navigate('/dashboard')}
                 >
                   Dashboard
                 </Button>
                 <div>
-                  <h1 className="text-lg font-semibold text-gray-900 capitalize">
+                  <h1 className="text-lg font-semibold capitalize text-gray-900">
                     {currentSession.relationshipType?.replace('_', ' ')} Session
                   </h1>
                 </div>
@@ -130,7 +124,7 @@ const Game = () => {
               <Button
                 variant="outline"
                 size="sm"
-                leftIcon={<X className="w-4 h-4" />}
+                leftIcon={<X className="h-4 w-4" />}
                 onClick={() => setShowEndConfirm(true)}
               >
                 End Session
@@ -151,15 +145,15 @@ const Game = () => {
 
         {/* Error Display */}
         {error && (
-          <div className="max-w-4xl mx-auto px-4 py-4">
-            <div className="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-md">
+          <div className="mx-auto max-w-4xl px-4 py-4">
+            <div className="rounded-md border border-error-200 bg-error-50 px-4 py-3 text-error-700">
               {error}
             </div>
           </div>
         )}
 
         {/* Main Game Area */}
-        <div className="max-w-4xl mx-auto px-4 py-8 mobile-safe-bottom">
+        <div className="mobile-safe-bottom mx-auto max-w-4xl px-4 py-8">
           {currentCard ? (
             /* Card Display Component */
             <CardDisplay
@@ -171,22 +165,22 @@ const Game = () => {
           ) : (
             /* Draw Card Interface */
             <div className="text-center">
-              <div className="card p-8 max-w-2xl mx-auto">
+              <div className="card mx-auto max-w-2xl p-8">
                 <div className="mb-8">
-                  <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <RefreshCw className="w-10 h-10 text-primary-600" />
+                  <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary-100">
+                    <RefreshCw className="h-10 w-10 text-primary-600" />
                   </div>
-                  <h2 className="text-2xl font-heading font-bold text-gray-900 mb-4">
+                  <h2 className="mb-4 font-heading text-2xl font-bold text-gray-900">
                     Ready for the next card?
                   </h2>
-                  <p className="text-gray-600 mb-6">
+                  <p className="mb-6 text-gray-600">
                     Draw a card to continue building connections with your group.
                   </p>
                 </div>
 
                 <Button
                   size="lg"
-                  leftIcon={<RefreshCw className="w-5 h-5" />}
+                  leftIcon={<RefreshCw className="h-5 w-5" />}
                   onClick={handleDrawCard}
                   loading={isDrawing}
                   disabled={isDrawing}
@@ -201,27 +195,17 @@ const Game = () => {
 
         {/* End Session Confirmation Modal */}
         {showEndConfirm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                End Session?
-              </h3>
-              <p className="text-gray-600 mb-6">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+            <div className="w-full max-w-md rounded-lg bg-white p-6">
+              <h3 className="mb-4 text-lg font-semibold text-gray-900">End Session?</h3>
+              <p className="mb-6 text-gray-600">
                 Are you sure you want to end this session? Your progress will be saved.
               </p>
               <div className="flex space-x-4">
-                <Button
-                  variant="outline"
-                  fullWidth
-                  onClick={() => setShowEndConfirm(false)}
-                >
+                <Button variant="outline" fullWidth onClick={() => setShowEndConfirm(false)}>
                   Continue Playing
                 </Button>
-                <Button
-                  variant="error"
-                  fullWidth
-                  onClick={handleEndSession}
-                >
+                <Button variant="error" fullWidth onClick={handleEndSession}>
                   End Session
                 </Button>
               </div>

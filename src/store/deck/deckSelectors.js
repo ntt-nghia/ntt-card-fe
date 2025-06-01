@@ -1,4 +1,4 @@
-import {createSelector} from "@reduxjs/toolkit";
+import { createSelector } from '@reduxjs/toolkit';
 
 export const deckSelectors = {
   getDeckState: (state) => state.deck,
@@ -33,31 +33,29 @@ export const deckSelectors = {
 
   // Computed selectors
   getDecksByRelationshipType: (state, relationshipType) => {
-    return state.deck.filteredDecks.filter(deck =>
-      deck.relationshipType === relationshipType
-    );
+    return state.deck.filteredDecks.filter((deck) => deck.relationshipType === relationshipType);
   },
 
   getFreeDecks: (state) => {
-    return state.deck.filteredDecks.filter(deck => deck.tier === 'FREE');
+    return state.deck.filteredDecks.filter((deck) => deck.tier === 'FREE');
   },
 
   getPremiumDecks: (state) => {
-    return state.deck.filteredDecks.filter(deck => deck.tier === 'PREMIUM');
+    return state.deck.filteredDecks.filter((deck) => deck.tier === 'PREMIUM');
   },
 
   getUnlockedDecks: (state) => {
-    return state.deck.filteredDecks.filter(deck => deck.isUnlocked === true);
+    return state.deck.filteredDecks.filter((deck) => deck.isUnlocked === true);
   },
 
   getLockedDecks: (state) => {
-    return state.deck.filteredDecks.filter(deck =>
-      deck.tier === 'PREMIUM' && deck.isUnlocked !== true
+    return state.deck.filteredDecks.filter(
+      (deck) => deck.tier === 'PREMIUM' && deck.isUnlocked !== true
     );
   },
 
   getDeckById: (state, deckId) => {
-    return state.deck.allDecks.find(deck => deck.id === deckId);
+    return state.deck.allDecks.find((deck) => deck.id === deckId);
   },
 
   getDeckStatisticsById: (state, deckId) => {
@@ -103,49 +101,41 @@ export const deckSelectors = {
     if (!favoriteType) return decks.slice(0, 3);
 
     // Recommend decks of user's favorite relationship type
-    const favoriteTypeDecks = decks.filter(deck =>
-      deck.relationshipType === favoriteType
-    );
+    const favoriteTypeDecks = decks.filter((deck) => deck.relationshipType === favoriteType);
 
     return favoriteTypeDecks.slice(0, 3);
   },
 
   hasAccessToDeck: (state, deckId) => {
-    const deck = state.deck.allDecks.find(d => d.id === deckId);
+    const deck = state.deck.allDecks.find((d) => d.id === deckId);
     return deck?.hasAccess === true || deck?.tier === 'FREE';
   },
 
   canPlayDeck: (state, deckId) => {
-    const deck = state.deck.allDecks.find(d => d.id === deckId);
+    const deck = state.deck.allDecks.find((d) => d.id === deckId);
     return deck?.hasAccess === true && deck?.status === 'active';
   },
 
-  getDecksByValue: createSelector(
-    [(state) => state.deck.filteredDecks],
-    (decks) => {
-      return decks
-        .filter(deck => deck.price !== undefined)
-        .sort((a, b) => {
-          // Sort by value: free first, then by price
-          if (a.tier === 'FREE' && b.tier === 'PREMIUM') return -1;
-          if (a.tier === 'PREMIUM' && b.tier === 'FREE') return 1;
-          return (a.price || 0) - (b.price || 0);
-        });
-    }
-  ),
+  getDecksByValue: createSelector([(state) => state.deck.filteredDecks], (decks) => {
+    return decks
+      .filter((deck) => deck.price !== undefined)
+      .sort((a, b) => {
+        // Sort by value: free first, then by price
+        if (a.tier === 'FREE' && b.tier === 'PREMIUM') return -1;
+        if (a.tier === 'PREMIUM' && b.tier === 'FREE') return 1;
+        return (a.price || 0) - (b.price || 0);
+      });
+  }),
 
   getDeckRecommendations: createSelector(
-    [
-      (state) => state.deck.filteredDecks,
-      (state, userStatistics) => userStatistics
-    ],
+    [(state) => state.deck.filteredDecks, (state, userStatistics) => userStatistics],
     (decks, userStatistics) => {
       if (!userStatistics) return decks.slice(0, 3);
 
       const favoriteType = userStatistics.favoriteRelationshipType;
       const experience = userStatistics.totalSessions || 0;
 
-      let recommended = decks.filter(deck => {
+      let recommended = decks.filter((deck) => {
         // Recommend based on user's favorite type
         if (favoriteType && deck.relationshipType === favoriteType) return true;
 
@@ -169,63 +159,56 @@ export const deckSelectors = {
     }
   ),
 
-  getDecksByDifficulty: createSelector(
-    [(state) => state.deck.filteredDecks],
-    (decks) => {
-      const grouped = {
-        beginner: [],
-        intermediate: [],
-        advanced: []
-      };
+  getDecksByDifficulty: createSelector([(state) => state.deck.filteredDecks], (decks) => {
+    const grouped = {
+      beginner: [],
+      intermediate: [],
+      advanced: [],
+    };
 
-      decks.forEach(deck => {
-        const difficulty = deck.difficulty || 'intermediate';
-        if (grouped[difficulty]) {
-          grouped[difficulty].push(deck);
-        }
-      });
+    decks.forEach((deck) => {
+      const difficulty = deck.difficulty || 'intermediate';
+      if (grouped[difficulty]) {
+        grouped[difficulty].push(deck);
+      }
+    });
 
-      return grouped;
-    }
-  ),
+    return grouped;
+  }),
 
-  getUnlockedValue: createSelector(
-    [(state) => state.deck.filteredDecks],
-    (decks) => {
-      const unlockedDecks = decks.filter(deck => deck.isUnlocked || deck.tier === 'FREE');
-      const totalValue = unlockedDecks.reduce((sum, deck) => sum + (deck.price || 0), 0);
-      const totalCards = unlockedDecks.reduce((sum, deck) => sum + (deck.cardCount?.total || 0), 0);
+  getUnlockedValue: createSelector([(state) => state.deck.filteredDecks], (decks) => {
+    const unlockedDecks = decks.filter((deck) => deck.isUnlocked || deck.tier === 'FREE');
+    const totalValue = unlockedDecks.reduce((sum, deck) => sum + (deck.price || 0), 0);
+    const totalCards = unlockedDecks.reduce((sum, deck) => sum + (deck.cardCount?.total || 0), 0);
 
-      return {
-        deckCount: unlockedDecks.length,
-        totalValue,
-        totalCards,
-        averageValue: unlockedDecks.length > 0 ? totalValue / unlockedDecks.length : 0
-      };
-    }
-  ),
+    return {
+      deckCount: unlockedDecks.length,
+      totalValue,
+      totalCards,
+      averageValue: unlockedDecks.length > 0 ? totalValue / unlockedDecks.length : 0,
+    };
+  }),
 
   getSearchResults: createSelector(
-    [
-      (state) => state.deck.filteredDecks,
-      (state) => state.deck.filters.searchQuery
-    ],
+    [(state) => state.deck.filteredDecks, (state) => state.deck.filters.searchQuery],
     (decks, searchQuery) => {
       if (!searchQuery || searchQuery.length < 2) return decks;
 
       const query = searchQuery.toLowerCase();
 
-      return decks.filter(deck => {
+      return decks.filter((deck) => {
         const name = deck.name?.en?.toLowerCase() || '';
         const description = deck.description?.en?.toLowerCase() || '';
         const tags = deck.tags?.join(' ').toLowerCase() || '';
         const relationshipType = deck.relationshipType?.toLowerCase() || '';
 
-        return name.includes(query) ||
+        return (
+          name.includes(query) ||
           description.includes(query) ||
           tags.includes(query) ||
-          relationshipType.includes(query);
+          relationshipType.includes(query)
+        );
       });
     }
-  )
+  ),
 };

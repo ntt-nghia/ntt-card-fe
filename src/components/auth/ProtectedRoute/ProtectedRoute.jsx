@@ -13,7 +13,7 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
   // Show loading while checking authentication
   if (isLoading || !isInitialized) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <Loading size="large" />
       </div>
     );

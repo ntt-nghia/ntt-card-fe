@@ -6,10 +6,5 @@ import userSaga from './user/userSaga';
 import deckSaga from './deck/deckSaga';
 
 export default function* rootSaga() {
-  yield all([
-    fork(authSaga),
-    fork(gameSaga),
-    fork(userSaga),
-    fork(deckSaga),
-  ]);
+  yield all([fork(authSaga), fork(gameSaga), fork(userSaga), fork(deckSaga)]);
 }

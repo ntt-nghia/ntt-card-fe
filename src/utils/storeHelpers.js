@@ -1,4 +1,4 @@
-import ErrorBoundary from "@components/common/ErrorBoundary/index.js";
+import ErrorBoundary from '@components/common/ErrorBoundary/index.js';
 
 export const createAsyncThunk = (typePrefix, asyncFunction) => {
   const pending = `${typePrefix}/pending`;
@@ -17,7 +17,7 @@ export const createAsyncThunk = (typePrefix, asyncFunction) => {
 
     // For use in reducers
     toString: () => typePrefix,
-    type: typePrefix
+    type: typePrefix,
   };
 };
 
@@ -55,10 +55,8 @@ export const withReduxErrorBoundary = (Component) => {
       <ErrorBoundary
         fallback={({ error, retry }) => (
           <div className="p-4 text-center">
-            <h3 className="text-lg font-semibold text-error-700 mb-2">
-              Component Error
-            </h3>
-            <p className="text-sm text-error-600 mb-4">
+            <h3 className="mb-2 text-lg font-semibold text-error-700">Component Error</h3>
+            <p className="mb-4 text-sm text-error-600">
               A Redux-related error occurred: {error.message}
             </p>
             <Button onClick={retry} size="sm">

@@ -8,7 +8,7 @@
   }
 
   body {
-    @apply font-sans text-gray-900 bg-gray-50;
+    @apply bg-gray-50 font-sans text-gray-900;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -20,15 +20,15 @@
   }
 
   .card {
-    @apply bg-white rounded-xl shadow-card border border-gray-200;
+    @apply rounded-xl border border-gray-200 bg-white shadow-card;
   }
 
   .card-hover {
-    @apply hover:shadow-card-hover transition-shadow duration-200;
+    @apply transition-shadow duration-200 hover:shadow-card-hover;
   }
 
   .input-field {
-    @apply block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500;
+    @apply block w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-primary-500;
   }
 
   .loading-spinner {
@@ -61,8 +61,12 @@
 
 /* Custom animations */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideIn {
@@ -77,8 +81,13 @@
 }
 
 @keyframes bounceGentle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }
 
 /* Mobile-specific optimizations */

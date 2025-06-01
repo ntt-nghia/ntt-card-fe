@@ -10,8 +10,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "lint": "eslint src --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "lint:fix": "eslint src --ext js,jsx --fix",
+    "lint": "eslint -c eslint.config.js --report-unused-disable-directives --max-warnings 0 --global src",
+    "lint:fix": "eslint -c eslint.config.js --fix",
     "format": "prettier --write \"src/**/*.{js,jsx,json,css,md}\"",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist node_modules/.vite",
@@ -20,6 +20,7 @@
     "start:prod": "npm run build && npm run preview"
   },
   "dependencies": {
+    "@eslint/js": "^9.28.0",
     "@reduxjs/toolkit": "^2.8.2",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/typography": "^0.5.16",

@@ -18,14 +18,12 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <header className="border-b border-gray-200 bg-white shadow-sm">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex-shrink-0">
-            <h1 className="text-xl font-heading font-bold text-primary-600">
-              Connection Game
-            </h1>
+            <h1 className="font-heading text-xl font-bold text-primary-600">Connection Game</h1>
           </Link>
 
           {/* Navigation */}
@@ -67,32 +65,22 @@ const Header = () => {
           <div className="flex items-center space-x-4">
             {isAuthenticated ? (
               <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600">
-                  {user?.displayName}
-                </span>
+                <span className="text-sm text-gray-600">{user?.displayName}</span>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleLogout}
-                  leftIcon={<LogOut className="w-4 h-4" />}
+                  leftIcon={<LogOut className="h-4 w-4" />}
                 >
                   Logout
                 </Button>
               </div>
             ) : (
               <div className="space-x-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate('/login')}
-                >
+                <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>
                   Login
                 </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => navigate('/register')}
-                >
+                <Button variant="primary" size="sm" onClick={() => navigate('/register')}>
                   Get Started
                 </Button>
               </div>

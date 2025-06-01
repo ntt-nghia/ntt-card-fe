@@ -1,7 +1,7 @@
 const STORAGE_KEYS = {
   AUTH_TOKEN: 'authToken',
   USER_PREFERENCES: 'userPreferences',
-  GAME_STATE: 'gameState'
+  GAME_STATE: 'gameState',
 };
 
 export const getStoredToken = () => {

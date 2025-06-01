@@ -29,7 +29,7 @@ export const gameService = {
   // Complete a card
   completeCard: async (sessionId, cardId) => {
     const response = await apiMethods.post(ENDPOINTS.SESSIONS.COMPLETE_CARD(sessionId), {
-      cardId
+      cardId,
     });
     return response.data;
   },
@@ -37,7 +37,7 @@ export const gameService = {
   // Skip a card
   skipCard: async (sessionId, cardId) => {
     const response = await apiMethods.post(ENDPOINTS.SESSIONS.SKIP_CARD(sessionId), {
-      cardId
+      cardId,
     });
     return response.data;
   },

@@ -15,7 +15,7 @@ const Register = () => {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isSubmitting }
+    formState: { errors, isSubmitting },
   } = useForm();
 
   const password = watch('password');
@@ -34,7 +34,7 @@ const Register = () => {
     // Convert birthDate to proper format
     const userData = {
       ...data,
-      birthDate: new Date(data.birthDate)
+      birthDate: new Date(data.birthDate),
     };
     await registerUser(userData);
   };
@@ -48,15 +48,16 @@ const Register = () => {
     <>
       <Helmet>
         <title>Sign Up - Connection Game</title>
-        <meta name="description" content="Create your Connection Game account and start building meaningful relationships" />
+        <meta
+          name="description"
+          content="Create your Connection Game account and start building meaningful relationships"
+        />
       </Helmet>
 
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md space-y-8">
           <div className="text-center">
-            <h2 className="text-3xl font-heading font-bold text-gray-900">
-              Join Connection Game
-            </h2>
+            <h2 className="font-heading text-3xl font-bold text-gray-900">Join Connection Game</h2>
             <p className="mt-2 text-sm text-gray-600">
               Start building meaningful relationships today
             </p>
@@ -64,7 +65,7 @@ const Register = () => {
 
           <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
             {error && (
-              <div className="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-md">
+              <div className="rounded-md border border-error-200 bg-error-50 px-4 py-3 text-error-700">
                 {error}
               </div>
             )}
@@ -72,7 +73,10 @@ const Register = () => {
             <div className="space-y-4">
               {/* Display Name */}
               <div>
-                <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="displayName"
+                  className="mb-1 block text-sm font-medium text-gray-700"
+                >
                   Display Name
                 </label>
                 <div className="relative">
@@ -81,18 +85,18 @@ const Register = () => {
                       required: 'Display name is required',
                       minLength: {
                         value: 1,
-                        message: 'Display name must be at least 1 character'
+                        message: 'Display name must be at least 1 character',
                       },
                       maxLength: {
                         value: 50,
-                        message: 'Display name must be less than 50 characters'
-                      }
+                        message: 'Display name must be less than 50 characters',
+                      },
                     })}
                     type="text"
                     className="input-field pl-10"
                     placeholder="Enter your display name"
                   />
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                 </div>
                 {errors.displayName && (
                   <p className="mt-1 text-sm text-error-600">{errors.displayName.message}</p>
@@ -101,7 +105,7 @@ const Register = () => {
 
               {/* Email */}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
                   Email Address
                 </label>
                 <div className="relative">
@@ -110,14 +114,14 @@ const Register = () => {
                       required: 'Email is required',
                       pattern: {
                         value: /^\S+@\S+$/i,
-                        message: 'Please enter a valid email'
-                      }
+                        message: 'Please enter a valid email',
+                      },
                     })}
                     type="email"
                     className="input-field pl-10"
                     placeholder="Enter your email"
                   />
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                 </div>
                 {errors.email && (
                   <p className="mt-1 text-sm text-error-600">{errors.email.message}</p>
@@ -126,7 +130,7 @@ const Register = () => {
 
               {/* Birth Date */}
               <div>
-                <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="birthDate" className="mb-1 block text-sm font-medium text-gray-700">
                   Birth Date
                 </label>
                 <div className="relative">
@@ -138,13 +142,13 @@ const Register = () => {
                         const today = new Date();
                         const age = today.getFullYear() - birthDate.getFullYear();
                         return age >= 18 || 'You must be at least 18 years old';
-                      }
+                      },
                     })}
                     type="date"
                     max={minBirthDateString}
                     className="input-field pl-10"
                   />
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                 </div>
                 {errors.birthDate && (
                   <p className="mt-1 text-sm text-error-600">{errors.birthDate.message}</p>
@@ -153,7 +157,7 @@ const Register = () => {
 
               {/* Password */}
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
                   Password
                 </label>
                 <div className="relative">
@@ -162,23 +166,23 @@ const Register = () => {
                       required: 'Password is required',
                       minLength: {
                         value: 8,
-                        message: 'Password must be at least 8 characters'
-                      }
+                        message: 'Password must be at least 8 characters',
+                      },
                     })}
                     type={showPassword ? 'text' : 'password'}
                     className="input-field pl-10 pr-10"
                     placeholder="Create a password"
                   />
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                   <button
                     type="button"
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 transform"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <EyeOff className="w-4 h-4 text-gray-400" />
+                      <EyeOff className="h-4 w-4 text-gray-400" />
                     ) : (
-                      <Eye className="w-4 h-4 text-gray-400" />
+                      <Eye className="h-4 w-4 text-gray-400" />
                     )}
                   </button>
                 </div>
@@ -189,20 +193,23 @@ const Register = () => {
 
               {/* Confirm Password */}
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="confirmPassword"
+                  className="mb-1 block text-sm font-medium text-gray-700"
+                >
                   Confirm Password
                 </label>
                 <div className="relative">
                   <input
                     {...register('confirmPassword', {
                       required: 'Please confirm your password',
-                      validate: (value) => value === password || 'Passwords do not match'
+                      validate: (value) => value === password || 'Passwords do not match',
                     })}
                     type="password"
                     className="input-field pl-10"
                     placeholder="Confirm your password"
                   />
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                 </div>
                 {errors.confirmPassword && (
                   <p className="mt-1 text-sm text-error-600">{errors.confirmPassword.message}</p>
@@ -212,9 +219,14 @@ const Register = () => {
 
             <div className="text-xs text-gray-500">
               By creating an account, you agree to our{' '}
-              <a href="#" className="text-primary-600 hover:text-primary-700">Terms of Service</a>{' '}
+              <a href="#" className="text-primary-600 hover:text-primary-700">
+                Terms of Service
+              </a>{' '}
               and{' '}
-              <a href="#" className="text-primary-600 hover:text-primary-700">Privacy Policy</a>.
+              <a href="#" className="text-primary-600 hover:text-primary-700">
+                Privacy Policy
+              </a>
+              .
             </div>
 
             <Button
@@ -232,7 +244,7 @@ const Register = () => {
                 Already have an account?{' '}
                 <Link
                   to="/login"
-                  className="text-primary-600 hover:text-primary-700 font-medium transition-colors"
+                  className="font-medium text-primary-600 transition-colors hover:text-primary-700"
                 >
                   Sign in here
                 </Link>

@@ -29,11 +29,13 @@ export const useDecks = () => {
   };
 
   const unlockDeck = (deckId, transactionId, paymentMethod = 'stripe') => {
-    dispatch(deckActions.unlockDeckRequest({
-      deckId,
-      transactionId,
-      paymentMethod
-    }));
+    dispatch(
+      deckActions.unlockDeckRequest({
+        deckId,
+        transactionId,
+        paymentMethod,
+      })
+    );
   };
 
   const getDeckStatistics = (deckId) => {

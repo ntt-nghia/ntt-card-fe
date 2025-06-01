@@ -11,7 +11,7 @@ import {
   Briefcase,
   Home as HomeIcon,
   Star,
-  TrendingUp
+  TrendingUp,
 } from 'lucide-react';
 
 import { useDecks } from '@hooks/useDecks';
@@ -37,7 +37,7 @@ const Decks = () => {
     setFilters,
     unlockDeck,
     loadMoreDecks,
-    clearError
+    clearError,
   } = useDecks();
 
   const { startSession } = useGame();
@@ -81,15 +81,23 @@ const Decks = () => {
   }, [filters, setSearchParams]);
 
   const relationshipTypeOptions = [
-    { value: RELATIONSHIP_TYPES.FRIENDS, label: 'Friends', icon: <Users className="w-4 h-4" /> },
-    { value: RELATIONSHIP_TYPES.ESTABLISHED_COUPLES, label: 'Couples', icon: <Heart className="w-4 h-4" /> },
-    { value: RELATIONSHIP_TYPES.COLLEAGUES, label: 'Colleagues', icon: <Briefcase className="w-4 h-4" /> },
-    { value: RELATIONSHIP_TYPES.FAMILY, label: 'Family', icon: <HomeIcon className="w-4 h-4" /> },
+    { value: RELATIONSHIP_TYPES.FRIENDS, label: 'Friends', icon: <Users className="h-4 w-4" /> },
+    {
+      value: RELATIONSHIP_TYPES.ESTABLISHED_COUPLES,
+      label: 'Couples',
+      icon: <Heart className="h-4 w-4" />,
+    },
+    {
+      value: RELATIONSHIP_TYPES.COLLEAGUES,
+      label: 'Colleagues',
+      icon: <Briefcase className="h-4 w-4" />,
+    },
+    { value: RELATIONSHIP_TYPES.FAMILY, label: 'Family', icon: <HomeIcon className="h-4 w-4" /> },
   ];
 
   const tierOptions = [
-    { value: DECK_TIERS.FREE, label: 'Free Decks', icon: <Star className="w-4 h-4" /> },
-    { value: DECK_TIERS.PREMIUM, label: 'Premium Decks', icon: <CreditCard className="w-4 h-4" /> },
+    { value: DECK_TIERS.FREE, label: 'Free Decks', icon: <Star className="h-4 w-4" /> },
+    { value: DECK_TIERS.PREMIUM, label: 'Premium Decks', icon: <CreditCard className="h-4 w-4" /> },
   ];
 
   const handleSearch = (e) => {
@@ -126,7 +134,7 @@ const Decks = () => {
     const sessionData = {
       relationshipType: selectedDeck.relationshipType,
       selectedDeckIds: deckIds,
-      language: user?.language || 'en'
+      language: user?.language || 'en',
     };
 
     try {
@@ -147,36 +155,37 @@ const Decks = () => {
     }
   };
 
-  const activeFilterCount = Object.keys(filters).filter(key =>
-    filters[key] && key !== 'searchQuery'
-  ).length + (filters.searchQuery ? 1 : 0);
+  const activeFilterCount =
+    Object.keys(filters).filter((key) => filters[key] && key !== 'searchQuery').length +
+    (filters.searchQuery ? 1 : 0);
 
   return (
     <>
       <Helmet>
         <title>Browse Decks - Connection Game</title>
-        <meta name="description" content="Browse and unlock card decks for your Connection Game sessions" />
+        <meta
+          name="description"
+          content="Browse and unlock card decks for your Connection Game sessions"
+        />
       </Helmet>
 
       <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           {/* Page Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-heading font-bold text-gray-900 mb-2">
-              Browse Decks
-            </h1>
+            <h1 className="mb-2 font-heading text-3xl font-bold text-gray-900">Browse Decks</h1>
             <p className="text-gray-600">
               Discover and unlock card decks to enhance your connection-building sessions
             </p>
           </div>
 
           {/* Search and Filters */}
-          <div className="card p-6 mb-8">
+          <div className="card mb-8 p-6">
             {/* Search Bar */}
             <form onSubmit={handleSearch} className="mb-4">
               <div className="flex gap-4">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                   <input
                     type="text"
                     placeholder="Search decks by name, description, or tags..."
@@ -185,12 +194,10 @@ const Decks = () => {
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
-                <Button type="submit">
-                  Search
-                </Button>
+                <Button type="submit">Search</Button>
                 <Button
                   variant="outline"
-                  leftIcon={<Filter className="w-4 h-4" />}
+                  leftIcon={<Filter className="h-4 w-4" />}
                   onClick={() => setShowFilters(!showFilters)}
                 >
                   Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
@@ -201,19 +208,19 @@ const Decks = () => {
             {/* Filter Panel */}
             {showFilters && (
               <div className="border-t border-gray-200 pt-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {/* Relationship Type Filter */}
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900 mb-3">Relationship Type</h3>
+                    <h3 className="mb-3 text-sm font-medium text-gray-900">Relationship Type</h3>
                     <div className="space-y-2">
                       {relationshipTypeOptions.map((option) => (
                         <button
                           key={option.value}
                           onClick={() => handleFilterChange('relationshipType', option.value)}
-                          className={`flex items-center w-full px-3 py-2 text-sm rounded-md transition-colors ${
+                          className={`flex w-full items-center rounded-md px-3 py-2 text-sm transition-colors ${
                             filters.relationshipType === option.value
-                              ? 'bg-primary-100 text-primary-700 border border-primary-200'
-                              : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-transparent'
+                              ? 'border border-primary-200 bg-primary-100 text-primary-700'
+                              : 'border border-transparent bg-gray-50 text-gray-700 hover:bg-gray-100'
                           }`}
                         >
                           {option.icon}
@@ -225,16 +232,16 @@ const Decks = () => {
 
                   {/* Tier Filter */}
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900 mb-3">Deck Type</h3>
+                    <h3 className="mb-3 text-sm font-medium text-gray-900">Deck Type</h3>
                     <div className="space-y-2">
                       {tierOptions.map((option) => (
                         <button
                           key={option.value}
                           onClick={() => handleFilterChange('tier', option.value)}
-                          className={`flex items-center w-full px-3 py-2 text-sm rounded-md transition-colors ${
+                          className={`flex w-full items-center rounded-md px-3 py-2 text-sm transition-colors ${
                             filters.tier === option.value
-                              ? 'bg-primary-100 text-primary-700 border border-primary-200'
-                              : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-transparent'
+                              ? 'border border-primary-200 bg-primary-100 text-primary-700'
+                              : 'border border-transparent bg-gray-50 text-gray-700 hover:bg-gray-100'
                           }`}
                         >
                           {option.icon}
@@ -246,13 +253,13 @@ const Decks = () => {
 
                   {/* Quick Actions */}
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900 mb-3">Quick Actions</h3>
+                    <h3 className="mb-3 text-sm font-medium text-gray-900">Quick Actions</h3>
                     <div className="space-y-2">
                       <Button
                         variant="outline"
                         size="sm"
                         fullWidth
-                        leftIcon={<TrendingUp className="w-4 h-4" />}
+                        leftIcon={<TrendingUp className="h-4 w-4" />}
                         onClick={() => {
                           // Sort by popularity - this would be handled in the slice
                           console.log('Sort by popularity');
@@ -264,7 +271,7 @@ const Decks = () => {
                         variant="outline"
                         size="sm"
                         fullWidth
-                        leftIcon={<X className="w-4 h-4" />}
+                        leftIcon={<X className="h-4 w-4" />}
                         onClick={clearAllFilters}
                         disabled={activeFilterCount === 0}
                       >
@@ -278,31 +285,36 @@ const Decks = () => {
 
             {/* Active Filters Display */}
             {activeFilterCount > 0 && (
-              <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-200">
+              <div className="mt-4 flex flex-wrap gap-2 border-t border-gray-200 pt-4">
                 {filters.relationshipType && (
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary-100 text-primary-800">
-                    {relationshipTypeOptions.find(opt => opt.value === filters.relationshipType)?.label}
+                  <span className="inline-flex items-center rounded-full bg-primary-100 px-3 py-1 text-sm text-primary-800">
+                    {
+                      relationshipTypeOptions.find((opt) => opt.value === filters.relationshipType)
+                        ?.label
+                    }
                     <button
-                      onClick={() => handleFilterChange('relationshipType', filters.relationshipType)}
+                      onClick={() =>
+                        handleFilterChange('relationshipType', filters.relationshipType)
+                      }
                       className="ml-2 text-primary-600 hover:text-primary-800"
                     >
-                      <X className="w-3 h-3" />
+                      <X className="h-3 w-3" />
                     </button>
                   </span>
                 )}
                 {filters.tier && (
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary-100 text-primary-800">
-                    {tierOptions.find(opt => opt.value === filters.tier)?.label}
+                  <span className="inline-flex items-center rounded-full bg-primary-100 px-3 py-1 text-sm text-primary-800">
+                    {tierOptions.find((opt) => opt.value === filters.tier)?.label}
                     <button
                       onClick={() => handleFilterChange('tier', filters.tier)}
                       className="ml-2 text-primary-600 hover:text-primary-800"
                     >
-                      <X className="w-3 h-3" />
+                      <X className="h-3 w-3" />
                     </button>
                   </span>
                 )}
                 {filters.searchQuery && (
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary-100 text-primary-800">
+                  <span className="inline-flex items-center rounded-full bg-primary-100 px-3 py-1 text-sm text-primary-800">
                     Search: "{filters.searchQuery}"
                     <button
                       onClick={() => {
@@ -311,7 +323,7 @@ const Decks = () => {
                       }}
                       className="ml-2 text-primary-600 hover:text-primary-800"
                     >
-                      <X className="w-3 h-3" />
+                      <X className="h-3 w-3" />
                     </button>
                   </span>
                 )}
@@ -320,7 +332,7 @@ const Decks = () => {
           </div>
 
           {/* Results Header */}
-          <div className="flex justify-between items-center mb-6">
+          <div className="mb-6 flex items-center justify-between">
             <div>
               <p className="text-gray-600">
                 {isLoading ? 'Loading...' : `${filteredDecks.length} decks found`}
@@ -347,20 +359,18 @@ const Decks = () => {
 
           {/* Deck Selection Modal */}
           {showDeckModal && selectedDeck && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-              <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Start Game with {typeof selectedDeck.name === 'object' ? selectedDeck.name.en : selectedDeck.name}
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+              <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-lg bg-white p-6">
+                <h3 className="mb-4 text-lg font-semibold text-gray-900">
+                  Start Game with{' '}
+                  {typeof selectedDeck.name === 'object' ? selectedDeck.name.en : selectedDeck.name}
                 </h3>
-                <p className="text-gray-600 mb-6">
-                  You're about to start a new {selectedDeck.relationshipType?.replace('_', ' ')} session with this deck.
+                <p className="mb-6 text-gray-600">
+                  You're about to start a new {selectedDeck.relationshipType?.replace('_', ' ')}{' '}
+                  session with this deck.
                 </p>
                 <div className="flex space-x-4">
-                  <Button
-                    variant="outline"
-                    fullWidth
-                    onClick={() => setShowDeckModal(false)}
-                  >
+                  <Button variant="outline" fullWidth onClick={() => setShowDeckModal(false)}>
                     Cancel
                   </Button>
                   <Button

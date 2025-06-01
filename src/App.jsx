@@ -23,14 +23,14 @@ const NotFound = React.lazy(() => import('@pages/NotFound'));
 
 // Loading component for suspense
 const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+  <div className="flex min-h-screen items-center justify-center bg-gray-50">
     <Loading size="large" text="Loading..." />
   </div>
 );
 
 // Auth loading component
 const AuthLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+  <div className="flex min-h-screen items-center justify-center bg-gray-50">
     <Loading size="large" text="Checking authentication..." />
   </div>
 );
@@ -52,17 +52,15 @@ function App() {
   // Show error if auth check failed critically
   if (error && !isInitialized) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Unable to Initialize App
-          </h1>
-          <p className="text-gray-600 mb-6">
+          <h1 className="mb-4 text-2xl font-bold text-gray-900">Unable to Initialize App</h1>
+          <p className="mb-6 text-gray-600">
             There was a problem starting the application. Please try refreshing the page.
           </p>
           <button
             onClick={() => window.location.reload()}
-            className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
+            className="rounded-lg bg-primary-600 px-6 py-3 text-white transition-colors hover:bg-primary-700"
           >
             Refresh Page
           </button>
@@ -123,10 +121,7 @@ function App() {
               path="/game/:sessionId"
               element={
                 <ProtectedRoute>
-                  <ErrorBoundary
-                    level="page"
-                    fallback={GameErrorFallback}
-                  >
+                  <ErrorBoundary level="page" fallback={GameErrorFallback}>
                     <Game />
                   </ErrorBoundary>
                 </ProtectedRoute>

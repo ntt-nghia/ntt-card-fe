@@ -15,14 +15,17 @@ export const useErrorHandler = () => {
     return appError;
   }, []);
 
-  const handleAsyncError = useCallback(async (asyncFn, context = {}) => {
-    try {
-      return await asyncFn();
-    } catch (error) {
-      handleError(error, context);
-      throw error;
-    }
-  }, [handleError]);
+  const handleAsyncError = useCallback(
+    async (asyncFn, context = {}) => {
+      try {
+        return await asyncFn();
+      } catch (error) {
+        handleError(error, context);
+        throw error;
+      }
+    },
+    [handleError]
+  );
 
   return { handleError, handleAsyncError };
 };

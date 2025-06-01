@@ -30,7 +30,7 @@ export const validateEmail = (email) => {
 
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   };
 };
 
@@ -49,7 +49,7 @@ export const validatePassword = (password, options = {}) => {
     minLength = 8,
     requireNumbers = true,
     requireLetters = true,
-    requireSpecial = false
+    requireSpecial = false,
   } = options;
 
   const errors = [];
@@ -110,7 +110,7 @@ export const validatePassword = (password, options = {}) => {
     isValid: errors.length === 0,
     errors,
     strength: Math.min(strength, 5), // Cap at 5
-    strengthLabel: getPasswordStrengthLabel(strength)
+    strengthLabel: getPasswordStrengthLabel(strength),
   };
 };
 
@@ -146,13 +146,15 @@ export const validateDisplayName = (displayName) => {
     } else if (trimmed.length > 50) {
       errors.push('Display name must be less than 50 characters');
     } else if (!/^[a-zA-Z0-9\s\-_.]+$/.test(trimmed)) {
-      errors.push('Display name can only contain letters, numbers, spaces, hyphens, underscores, and periods');
+      errors.push(
+        'Display name can only contain letters, numbers, spaces, hyphens, underscores, and periods'
+      );
     }
   }
 
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   };
 };
 
@@ -183,7 +185,7 @@ export const validateBirthDate = (birthDate, minimumAge = 18) => {
   const dayDiff = today.getDate() - date.getDate();
 
   // Adjust age if birthday hasn't occurred this year
-  const actualAge = (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) ? age - 1 : age;
+  const actualAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
 
   if (date > today) {
     errors.push('Birth date cannot be in the future');
@@ -196,7 +198,7 @@ export const validateBirthDate = (birthDate, minimumAge = 18) => {
   return {
     isValid: errors.length === 0,
     errors,
-    age: actualAge
+    age: actualAge,
   };
 };
 
@@ -216,7 +218,7 @@ export const validateRelationshipType = (relationshipType) => {
 
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   };
 };
 
@@ -236,7 +238,7 @@ export const validateCardType = (cardType) => {
 
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   };
 };
 
@@ -256,7 +258,7 @@ export const validateDeckTier = (deckTier) => {
 
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   };
 };
 
@@ -278,7 +280,7 @@ export const validateConnectionLevel = (level) => {
 
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   };
 };
 
@@ -326,7 +328,7 @@ export const validateSessionConfiguration = (config) => {
 
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   };
 };
 
@@ -371,7 +373,7 @@ export const validateCardContent = (content) => {
 
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   };
 };
 
@@ -403,7 +405,7 @@ export const validateUrl = (url, required = false) => {
 
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   };
 };
 
@@ -434,7 +436,7 @@ export const validatePrice = (price, tier) => {
 
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   };
 };
 
@@ -490,7 +492,7 @@ export const sanitizeSearchQuery = (query, maxLength = 100) => {
   return {
     query: sanitized,
     isValid: errors.length === 0,
-    errors
+    errors,
   };
 };
 
@@ -505,13 +507,13 @@ export const validateFormData = (formData, validationRules) => {
   const sanitizedData = {};
   let isValid = true;
 
-  Object.keys(validationRules).forEach(field => {
+  Object.keys(validationRules).forEach((field) => {
     const value = formData[field];
     const rules = validationRules[field];
     const fieldErrors = [];
 
     // Apply each validation rule
-    rules.forEach(rule => {
+    rules.forEach((rule) => {
       const result = rule(value);
       if (!result.isValid) {
         fieldErrors.push(...result.errors);
@@ -532,7 +534,7 @@ export const validateFormData = (formData, validationRules) => {
   return {
     isValid,
     errors,
-    sanitizedData
+    sanitizedData,
   };
 };
 
@@ -569,7 +571,7 @@ export const isEmpty = (value) => {
 export const required = (fieldName) => (value) => {
   return {
     isValid: !isEmpty(value),
-    errors: isEmpty(value) ? [`${fieldName} is required`] : []
+    errors: isEmpty(value) ? [`${fieldName} is required`] : [],
   };
 };
 
@@ -587,7 +589,8 @@ export const minLength = (minLength, fieldName) => (value) => {
   const length = typeof value === 'string' ? value.trim().length : 0;
   return {
     isValid: length >= minLength,
-    errors: length < minLength ? [`${fieldName} must be at least ${minLength} characters long`] : []
+    errors:
+      length < minLength ? [`${fieldName} must be at least ${minLength} characters long`] : [],
   };
 };
 
@@ -605,6 +608,6 @@ export const maxLength = (maxLength, fieldName) => (value) => {
   const length = typeof value === 'string' ? value.length : 0;
   return {
     isValid: length <= maxLength,
-    errors: length > maxLength ? [`${fieldName} must be less than ${maxLength} characters`] : []
+    errors: length > maxLength ? [`${fieldName} must be less than ${maxLength} characters`] : [],
   };
 };

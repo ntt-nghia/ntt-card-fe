@@ -6,30 +6,33 @@ export const useApi = () => {
   const [error, setError] = useState(null);
   const { handleError } = useErrorHandler();
 
-  const execute = useCallback(async (apiCall, options = {}) => {
-    const {
-      onSuccess = () => {},
-      onError = () => {},
-      showErrorToast = true,
-      context = {}
-    } = options;
+  const execute = useCallback(
+    async (apiCall, options = {}) => {
+      const {
+        onSuccess = () => {},
+        onError = () => {},
+        showErrorToast = true,
+        context = {},
+      } = options;
 
-    setLoading(true);
-    setError(null);
+      setLoading(true);
+      setError(null);
 
-    try {
-      const result = await apiCall();
-      onSuccess(result);
-      return result;
-    } catch (err) {
-      const appError = showErrorToast ? handleError(err, context) : err;
-      setError(appError);
-      onError(appError);
-      throw appError;
-    } finally {
-      setLoading(false);
-    }
-  }, [handleError]);
+      try {
+        const result = await apiCall();
+        onSuccess(result);
+        return result;
+      } catch (err) {
+        const appError = showErrorToast ? handleError(err, context) : err;
+        setError(appError);
+        onError(appError);
+        throw appError;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [handleError]
+  );
 
   const reset = useCallback(() => {
     setLoading(false);
@@ -40,6 +43,6 @@ export const useApi = () => {
     loading,
     error,
     execute,
-    reset
+    reset,
   };
 };

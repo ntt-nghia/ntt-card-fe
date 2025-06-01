@@ -3,8 +3,8 @@ import { useMemo } from 'react';
 import {
   getMemoizedDeckRecommendations,
   getMemoizedSessionProgress,
-  getMemoizedUserStats
-} from "@store/selectors/memoizedSelectors.js";
+  getMemoizedUserStats,
+} from '@store/selectors/memoizedSelectors.js';
 
 export const useOptimizedSelector = (selector, deps = []) => {
   const memoizedSelector = useMemo(() => selector, deps);

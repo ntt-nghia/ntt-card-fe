@@ -14,10 +14,10 @@ const sagaMiddleware = createSagaMiddleware({
 
     if (window.Sentry) {
       window.Sentry.captureException(error, {
-        contexts: { saga: { stack: sagaStack } }
+        contexts: { saga: { stack: sagaStack } },
       });
     }
-  }
+  },
 });
 
 // Configure store with optimized settings
@@ -50,30 +50,28 @@ const store = configureStore({
       immutableCheck: {
         warnAfter: 32,
       },
-    })
-    .concat(
-      errorMiddleware,
-      performanceMiddleware,
-      sagaMiddleware
-    ),
-  devTools: process.env.NODE_ENV !== 'production' ? {
-    trace: true,
-    traceLimit: 25,
-    actionSanitizer: (action) => ({
-      ...action,
-      // Sanitize sensitive data in dev tools
-      ...(action.type.includes('login') && {
-        payload: { ...action.payload, password: '[REDACTED]' }
-      }),
-    }),
-    stateSanitizer: (state) => ({
-      ...state,
-      auth: {
-        ...state.auth,
-        token: state.auth.token ? '[REDACTED]' : null,
-      },
-    }),
-  } : false,
+    }).concat(errorMiddleware, performanceMiddleware, sagaMiddleware),
+  devTools:
+    process.env.NODE_ENV !== 'production'
+      ? {
+          trace: true,
+          traceLimit: 25,
+          actionSanitizer: (action) => ({
+            ...action,
+            // Sanitize sensitive data in dev tools
+            ...(action.type.includes('login') && {
+              payload: { ...action.payload, password: '[REDACTED]' },
+            }),
+          }),
+          stateSanitizer: (state) => ({
+            ...state,
+            auth: {
+              ...state.auth,
+              token: state.auth.token ? '[REDACTED]' : null,
+            },
+          }),
+        }
+      : false,
 });
 
 // Run saga middleware

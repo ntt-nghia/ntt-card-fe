@@ -1,46 +1,33 @@
-// src/store/auth/authSaga.js - Fixed with better token management and error handling
-import { call, put, takeEvery, takeLatest, select, delay } from 'redux-saga/effects';
+import { call, put, takeEvery, takeLatest, select, delay, fork, cancel } from 'redux-saga/effects';
 import toast from 'react-hot-toast';
 
 import { authActions } from './authSlice';
 import { authSelectors } from './authSelectors';
 import { userActions } from '../user/userSlice';
-import * as authAPI from '@services/auth';
-import { setAuthToken, removeAuthToken } from '@services/api';
-import { getStoredToken, storeToken, removeStoredToken } from '@services/storage';
+import firebaseAuthService from '@services/firebaseAuth';
 
-// Token refresh interval (15 minutes)
-const TOKEN_REFRESH_INTERVAL = 15 * 60 * 1000;
+// Token refresh task reference
+let tokenRefreshTask = null;
 
 function* checkAuthStateSaga() {
   try {
-    const token = yield call(getStoredToken);
+    const authState = yield call([firebaseAuthService, 'checkAuthState']);
 
-    if (!token) {
+    if (authState) {
+      const { user, token } = authState;
+
+      yield put(authActions.setAuthState({ user, token }));
+
+      // Load user profile data
+      yield put(userActions.getUserProfileRequest());
+
+      // Start token refresh monitoring
+      yield fork(tokenRefreshMonitor);
+    } else {
       yield put(authActions.clearAuthState());
-      return;
     }
-
-    // Set token in API headers
-    yield call(setAuthToken, token);
-
-    // Verify token by getting user profile
-    const response = yield call(authAPI.getProfile);
-
-    yield put(authActions.setAuthState({
-      user: response.data.user,
-      token
-    }));
-
-    // Start token refresh cycle
-    yield call(startTokenRefreshCycle);
-
   } catch (error) {
     console.warn('Auth check failed:', error.message);
-
-    // Token is invalid or expired
-    yield call(removeStoredToken);
-    yield call(removeAuthToken);
     yield put(authActions.clearAuthState());
   }
 }
@@ -53,42 +40,33 @@ function* loginSaga(action) {
       throw new Error('Email and password are required');
     }
 
-    const response = yield call(authAPI.login, { email, password });
-    const { user, token } = response.data;
+    const result = yield call([firebaseAuthService, 'login'], { email, password });
+    const { user, token } = result;
 
     if (!token || !user) {
-      throw new Error('Invalid response from server');
+      throw new Error('Invalid response from authentication service');
     }
-
-    // Store token and set in API headers
-    yield call(storeToken, token);
-    yield call(setAuthToken, token);
 
     yield put(authActions.loginSuccess({ user, token }));
 
     // Load user profile data
     yield put(userActions.getUserProfileRequest());
 
-    // Start token refresh cycle
-    yield call(startTokenRefreshCycle);
+    // Start token refresh monitoring
+    yield fork(tokenRefreshMonitor);
 
     toast.success(`Welcome back, ${user.displayName || user.email}!`);
 
     // Navigate to dashboard
     yield call(navigateToDashboard);
-
   } catch (error) {
-    const errorMessage = error.response?.data?.message ||
-                        error.message ||
-                        'Login failed';
-
+    const errorMessage = error.message || 'Login failed';
     yield put(authActions.loginFailure(errorMessage));
     toast.error(errorMessage);
 
     console.error('Login error:', {
       error: errorMessage,
       email: action.payload?.email,
-      response: error.response?.data
     });
   }
 }
@@ -99,76 +77,68 @@ function* registerSaga(action) {
 
     // Validate required fields
     const requiredFields = ['email', 'password', 'displayName', 'birthDate'];
-    const missingFields = requiredFields.filter(field => !userData[field]);
+    const missingFields = requiredFields.filter((field) => !userData[field]);
 
     if (missingFields.length > 0) {
       throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
     }
 
-    const response = yield call(authAPI.register, userData);
-    const { user, token } = response.data;
+    const result = yield call([firebaseAuthService, 'register'], userData);
+    const { user, token } = result;
 
     if (!token || !user) {
-      throw new Error('Invalid response from server');
+      throw new Error('Invalid response from registration service');
     }
-
-    // Store token and set in API headers
-    yield call(storeToken, token);
-    yield call(setAuthToken, token);
 
     yield put(authActions.registerSuccess({ user, token }));
 
-    // Initialize user profile data
+    // Load user profile data
     yield put(userActions.getUserProfileRequest());
 
-    // Start token refresh cycle
-    yield call(startTokenRefreshCycle);
+    // Start token refresh monitoring
+    yield fork(tokenRefreshMonitor);
 
     toast.success(`Welcome to Connection Game, ${user.displayName}!`);
 
     // Navigate to dashboard
     yield call(navigateToDashboard);
-
   } catch (error) {
-    const errorMessage = error.response?.data?.message ||
-                        error.message ||
-                        'Registration failed';
-
+    const errorMessage = error.message || 'Registration failed';
     yield put(authActions.registerFailure(errorMessage));
     toast.error(errorMessage);
 
     console.error('Registration error:', {
       error: errorMessage,
       email: action.payload?.email,
-      response: error.response?.data
     });
   }
 }
 
 function* logoutSaga() {
   try {
-    // Stop token refresh
-    yield call(stopTokenRefreshCycle);
-
-    // Call logout API (continue even if it fails)
-    try {
-      yield call(authAPI.logout);
-    } catch (apiError) {
-      console.warn('Logout API call failed:', apiError.message);
+    // Cancel token refresh monitoring
+    if (tokenRefreshTask) {
+      yield cancel(tokenRefreshTask);
+      tokenRefreshTask = null;
     }
+
+    // Call Firebase sign out
+    yield call([firebaseAuthService, 'signOut']);
 
     // Clear user data
     yield put(userActions.clearUserData());
-
-  } catch (error) {
-    console.warn('Logout process error:', error.message);
-  } finally {
-    // Always clear local storage and state
-    yield call(removeStoredToken);
-    yield call(removeAuthToken);
     yield put(authActions.logoutSuccess());
 
     toast.success('Logged out successfully');
+
+    // Navigate to home
+    yield call(navigateToHome);
+  } catch (error) {
+    console.warn('Logout error:', error.message);
+
+    // Force logout even if Firebase call fails
+    yield put(authActions.logoutSuccess());
+    yield put(userActions.clearUserData());
 
     // Navigate to home
     yield call(navigateToHome);
@@ -183,31 +153,30 @@ function* updateProfileSaga(action) {
       throw new Error('No update data provided');
     }
 
-    const response = yield call(authAPI.updateProfile, updateData);
+    const result = yield call([firebaseAuthService, 'updateProfile'], updateData);
 
-    yield put(authActions.updateProfileSuccess({
-      user: response.data.user
-    }));
+    yield put(
+      authActions.updateProfileSuccess({
+        user: result.user,
+      })
+    );
 
     // Also update user profile store
-    yield put(userActions.updateUserProfileSuccess({
-      user: response.data.user
-    }));
+    yield put(
+      userActions.updateUserProfileSuccess({
+        user: result.user,
+      })
+    );
 
     toast.success('Profile updated successfully');
-
   } catch (error) {
-    const errorMessage = error.response?.data?.message ||
-                        error.message ||
-                        'Profile update failed';
-
+    const errorMessage = error.message || 'Profile update failed';
     yield put(authActions.updateProfileFailure(errorMessage));
     toast.error(errorMessage);
 
     console.error('Profile update error:', {
       error: errorMessage,
       updateData: action.payload,
-      response: error.response?.data
     });
   }
 }
@@ -220,60 +189,38 @@ function* forgotPasswordSaga(action) {
       throw new Error('Email is required');
     }
 
-    yield call(authAPI.forgotPassword, email);
+    // Call backend forgot password endpoint
+    const response = yield call(fetch, '/api/v1/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+      const errorData = yield call([response, 'json']);
+      throw new Error(errorData.message || 'Failed to send reset email');
+    }
 
     yield put(authActions.forgotPasswordSuccess());
     toast.success('Password reset email sent. Check your inbox!');
-
   } catch (error) {
-    const errorMessage = error.response?.data?.message ||
-                        error.message ||
-                        'Failed to send reset email';
-
+    const errorMessage = error.message || 'Failed to send reset email';
     yield put(authActions.forgotPasswordFailure(errorMessage));
     toast.error(errorMessage);
 
     console.error('Forgot password error:', {
       error: errorMessage,
       email: action.payload?.email,
-      response: error.response?.data
     });
   }
 }
 
-// Token refresh management
-let refreshTask = null;
-
-function* startTokenRefreshCycle() {
+// Token refresh monitoring
+function* tokenRefreshMonitor() {
   try {
-    // Cancel existing refresh task
-    if (refreshTask) {
-      refreshTask.cancel();
-    }
-
-    // Start new refresh cycle
-    refreshTask = yield call(tokenRefreshLoop);
-  } catch (error) {
-    console.error('Token refresh cycle error:', error);
-  }
-}
-
-function* stopTokenRefreshCycle() {
-  try {
-    if (refreshTask) {
-      refreshTask.cancel();
-      refreshTask = null;
-    }
-  } catch (error) {
-    console.error('Stop token refresh error:', error);
-  }
-}
-
-function* tokenRefreshLoop() {
-  while (true) {
-    try {
-      // Wait for refresh interval
-      yield delay(TOKEN_REFRESH_INTERVAL);
+    while (true) {
+      // Check every 10 minutes
+      yield delay(10 * 60 * 1000);
 
       // Check if still authenticated
       const isAuthenticated = yield select(authSelectors.getIsAuthenticated);
@@ -281,21 +228,26 @@ function* tokenRefreshLoop() {
         break;
       }
 
-      // Refresh token by getting profile
-      const response = yield call(authAPI.getProfile);
+      try {
+        // Refresh ID token
+        const newToken = yield call([firebaseAuthService, 'refreshToken']);
 
-      // Update user data
-      yield put(authActions.updateProfileSuccess({
-        user: response.data.user
-      }));
+        // Update token in state if needed
+        const currentToken = yield select(authSelectors.getToken);
+        if (newToken !== currentToken) {
+          const user = yield select(authSelectors.getUser);
+          yield put(authActions.setAuthState({ user, token: newToken }));
+        }
+      } catch (refreshError) {
+        console.warn('Token refresh failed:', refreshError.message);
 
-    } catch (error) {
-      console.warn('Token refresh failed:', error.message);
-
-      // If refresh fails, logout user
-      yield put(authActions.logoutRequest());
-      break;
+        // If refresh fails, logout user
+        yield put(authActions.logoutRequest());
+        break;
+      }
     }
+  } catch (error) {
+    console.error('Token refresh monitor error:', error);
   }
 }
 
@@ -320,22 +272,42 @@ function* navigateToHome() {
   }
 }
 
-// Recovery saga for auth errors
+// Error recovery saga
 function* handleAuthError(action) {
   try {
     const error = action.payload;
 
     // If it's a token-related error, try to refresh
-    if (error.includes('token') || error.includes('unauthorized')) {
+    if (error.includes('token') || error.includes('unauthorized') || error.includes('expired')) {
       const isAuthenticated = yield select(authSelectors.getIsAuthenticated);
 
       if (isAuthenticated) {
-        // Try to refresh auth state
-        yield put(authActions.checkAuthState());
+        console.log('Attempting auth recovery...');
+
+        try {
+          // Try to refresh token
+          yield call([firebaseAuthService, 'refreshToken']);
+        } catch (refreshError) {
+          console.warn('Auth recovery failed:', refreshError.message);
+          // Force logout if refresh fails
+          yield put(authActions.logoutRequest());
+        }
       }
     }
   } catch (recoveryError) {
     console.error('Auth error recovery failed:', recoveryError);
+  }
+}
+
+// Cleanup saga
+function* cleanupSaga() {
+  try {
+    if (tokenRefreshTask) {
+      yield cancel(tokenRefreshTask);
+      tokenRefreshTask = null;
+    }
+  } catch (error) {
+    console.error('Cleanup error:', error);
   }
 }
 
@@ -348,8 +320,11 @@ export default function* authSaga() {
   yield takeEvery(authActions.forgotPasswordRequest.type, forgotPasswordSaga);
 
   // Error recovery watchers
-  yield takeEvery([
-    authActions.loginFailure.type,
-    authActions.updateProfileFailure.type
-  ], handleAuthError);
+  yield takeEvery(
+    [authActions.loginFailure.type, authActions.updateProfileFailure.type],
+    handleAuthError
+  );
+
+  // Cleanup on saga cancellation
+  yield takeEvery('@@cancel', cleanupSaga);
 }

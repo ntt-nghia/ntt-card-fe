@@ -5,7 +5,7 @@ export const errorMiddleware = (store) => (next) => (action) => {
     console.error('Redux middleware error:', {
       action,
       error: error.message,
-      stack: error.stack
+      stack: error.stack,
     });
 
     // Send to error tracking
@@ -14,9 +14,9 @@ export const errorMiddleware = (store) => (next) => (action) => {
         contexts: {
           redux: {
             action: action.type,
-            payload: action.payload
-          }
-        }
+            payload: action.payload,
+          },
+        },
       });
     }
 

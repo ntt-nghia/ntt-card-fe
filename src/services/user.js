@@ -17,7 +17,7 @@ export const userService = {
   // Update user preferences
   updatePreferences: async (preferences) => {
     const response = await apiMethods.patch(ENDPOINTS.USERS.PREFERENCES, {
-      preferences
+      preferences,
     });
     return response.data;
   },
@@ -25,7 +25,7 @@ export const userService = {
   // Update language preference
   updateLanguage: async (language) => {
     const response = await apiMethods.patch(ENDPOINTS.USERS.LANGUAGE, {
-      language
+      language,
     });
     return response.data;
   },

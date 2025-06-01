@@ -14,7 +14,7 @@ const DeckGrid = ({
   onRetry,
   hasMore = false,
   onLoadMore,
-  isLoadingMore = false
+  isLoadingMore = false,
 }) => {
   // Loading state
   if (isLoading && decks.length === 0) {
@@ -28,22 +28,14 @@ const DeckGrid = ({
   // Error state
   if (error && decks.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="w-16 h-16 bg-error-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Package className="w-8 h-8 text-error-600" />
+      <div className="py-12 text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-error-100">
+          <Package className="h-8 w-8 text-error-600" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          Failed to Load Decks
-        </h3>
-        <p className="text-gray-600 mb-6 max-w-md mx-auto">
-          {error}
-        </p>
+        <h3 className="mb-2 text-lg font-semibold text-gray-900">Failed to Load Decks</h3>
+        <p className="mx-auto mb-6 max-w-md text-gray-600">{error}</p>
         {onRetry && (
-          <Button
-            variant="outline"
-            leftIcon={<RefreshCw className="w-4 h-4" />}
-            onClick={onRetry}
-          >
+          <Button variant="outline" leftIcon={<RefreshCw className="h-4 w-4" />} onClick={onRetry}>
             Try Again
           </Button>
         )}
@@ -54,16 +46,14 @@ const DeckGrid = ({
   // Empty state
   if (!isLoading && decks.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Search className="w-8 h-8 text-gray-400" />
+      <div className="py-12 text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+          <Search className="h-8 w-8 text-gray-400" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          No Decks Found
-        </h3>
-        <p className="text-gray-600 max-w-md mx-auto">
-          We couldn't find any decks matching your search criteria.
-          Try adjusting your filters or search terms.
+        <h3 className="mb-2 text-lg font-semibold text-gray-900">No Decks Found</h3>
+        <p className="mx-auto max-w-md text-gray-600">
+          We couldn't find any decks matching your search criteria. Try adjusting your filters or
+          search terms.
         </p>
       </div>
     );
@@ -72,7 +62,7 @@ const DeckGrid = ({
   return (
     <div className="space-y-6">
       {/* Deck Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {decks.map((deck) => (
           <DeckCard
             key={deck.id}
@@ -87,19 +77,15 @@ const DeckGrid = ({
 
       {/* Loading More Indicator */}
       {isLoadingMore && (
-        <div className="text-center py-6">
+        <div className="py-6 text-center">
           <Loading size="md" text="Loading more decks..." />
         </div>
       )}
 
       {/* Load More Button */}
       {hasMore && !isLoadingMore && onLoadMore && (
-        <div className="text-center py-6">
-          <Button
-            variant="outline"
-            onClick={onLoadMore}
-            disabled={isLoadingMore}
-          >
+        <div className="py-6 text-center">
+          <Button variant="outline" onClick={onLoadMore} disabled={isLoadingMore}>
             Load More Decks
           </Button>
         </div>
@@ -107,14 +93,14 @@ const DeckGrid = ({
 
       {/* End of Results Indicator */}
       {!hasMore && decks.length > 0 && (
-        <div className="text-center py-6 text-sm text-gray-500">
+        <div className="py-6 text-center text-sm text-gray-500">
           You've seen all available decks
         </div>
       )}
 
       {/* Error Banner for Partial Failures */}
       {error && decks.length > 0 && (
-        <div className="bg-warning-50 border border-warning-200 rounded-md p-4">
+        <div className="rounded-md border border-warning-200 bg-warning-50 p-4">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <Package className="h-5 w-5 text-warning-400" />
@@ -126,11 +112,7 @@ const DeckGrid = ({
             </div>
             {onRetry && (
               <div className="ml-auto pl-3">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onRetry}
-                >
+                <Button variant="ghost" size="sm" onClick={onRetry}>
                   Retry
                 </Button>
               </div>

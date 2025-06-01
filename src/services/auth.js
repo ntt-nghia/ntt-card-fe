@@ -1,41 +1,67 @@
-import { apiMethods, ENDPOINTS } from './api';
+import firebaseAuthService from './firebaseAuth';
 
-// Authentication service functions
+// Authentication service functions using Firebase
 export const authService = {
   // Register new user
   register: async (userData) => {
-    const response = await apiMethods.post(ENDPOINTS.AUTH.REGISTER, userData);
-    return response.data;
+    return await firebaseAuthService.register(userData);
   },
 
   // Login user
   login: async (credentials) => {
-    const response = await apiMethods.post(ENDPOINTS.AUTH.LOGIN, credentials);
-    return response.data;
+    return await firebaseAuthService.login(credentials);
   },
 
   // Logout user
   logout: async () => {
-    const response = await apiMethods.post(ENDPOINTS.AUTH.LOGOUT);
-    return response.data;
+    return await firebaseAuthService.signOut();
   },
 
   // Get user profile
   getProfile: async () => {
-    const response = await apiMethods.get(ENDPOINTS.USERS.PROFILE);
-    return response.data;
+    return await firebaseAuthService.updateProfile({});
   },
 
   // Update user profile
   updateProfile: async (profileData) => {
-    const response = await apiMethods.patch(ENDPOINTS.AUTH.UPDATE_PROFILE, profileData);
-    return response.data;
+    return await firebaseAuthService.updateProfile(profileData);
   },
 
   // Forgot password
   forgotPassword: async (email) => {
-    const response = await apiMethods.post(ENDPOINTS.AUTH.FORGOT_PASSWORD, { email });
-    return response.data;
+    // This still goes directly to backend since it doesn't require auth
+    const response = await fetch('/api/v1/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to send reset email');
+    }
+
+    return await response.json();
+  },
+
+  // Check auth state
+  checkAuthState: async () => {
+    return await firebaseAuthService.checkAuthState();
+  },
+
+  // Refresh token
+  refreshToken: async () => {
+    return await firebaseAuthService.refreshToken();
+  },
+
+  // Get current user
+  getCurrentUser: () => {
+    return firebaseAuthService.getCurrentUser();
+  },
+
+  // Check if authenticated
+  isAuthenticated: () => {
+    return firebaseAuthService.isAuthenticated();
   },
 };
 
@@ -46,3 +72,7 @@ export const logout = authService.logout;
 export const getProfile = authService.getProfile;
 export const updateProfile = authService.updateProfile;
 export const forgotPassword = authService.forgotPassword;
+export const checkAuthState = authService.checkAuthState;
+export const refreshToken = authService.refreshToken;
+export const getCurrentUser = authService.getCurrentUser;
+export const isAuthenticated = authService.isAuthenticated;

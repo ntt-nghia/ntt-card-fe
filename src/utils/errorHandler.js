@@ -15,7 +15,7 @@ export const ERROR_CODES = {
   SESSION_ERROR: 'SESSION_ERROR',
   CARD_ERROR: 'CARD_ERROR',
   DECK_ERROR: 'DECK_ERROR',
-  UNKNOWN_ERROR: 'UNKNOWN_ERROR'
+  UNKNOWN_ERROR: 'UNKNOWN_ERROR',
 };
 
 export const handleApiError = (error) => {
@@ -31,29 +31,17 @@ export const handleApiError = (error) => {
 
   switch (status) {
     case 400:
-      return new AppError(
-        data.message || 'Invalid request',
-        ERROR_CODES.VALIDATION_ERROR,
-        error
-      );
+      return new AppError(data.message || 'Invalid request', ERROR_CODES.VALIDATION_ERROR, error);
     case 401:
-      return new AppError(
-        'Please log in to continue',
-        ERROR_CODES.AUTH_ERROR,
-        error
-      );
+      return new AppError('Please log in to continue', ERROR_CODES.AUTH_ERROR, error);
     case 403:
       return new AppError(
-        'You don\'t have permission to access this resource',
+        "You don't have permission to access this resource",
         ERROR_CODES.AUTH_ERROR,
         error
       );
     case 404:
-      return new AppError(
-        data.message || 'Resource not found',
-        ERROR_CODES.UNKNOWN_ERROR,
-        error
-      );
+      return new AppError(data.message || 'Resource not found', ERROR_CODES.UNKNOWN_ERROR, error);
     case 429:
       return new AppError(
         'Too many requests. Please wait a moment and try again.',
@@ -84,13 +72,12 @@ export const logError = (error, context = {}) => {
     code: error.code,
     timestamp: error.timestamp,
     context,
-    stack: error.stack
+    stack: error.stack,
   });
 
   if (window.Sentry) {
     window.Sentry.captureException(error, {
-      contexts: { custom: context }
+      contexts: { custom: context },
     });
   }
 };
-

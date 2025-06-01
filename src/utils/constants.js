@@ -3,14 +3,14 @@ export const RELATIONSHIP_TYPES = {
   COLLEAGUES: 'colleagues',
   NEW_COUPLES: 'new_couples',
   ESTABLISHED_COUPLES: 'established_couples',
-  FAMILY: 'family'
+  FAMILY: 'family',
 };
 
 export const CONNECTION_LEVELS = {
   SURFACE: 1,
   PERSONAL: 2,
   VULNERABLE: 3,
-  DEEP: 4
+  DEEP: 4,
 };
 
 export const CARD_TYPES = {
@@ -18,22 +18,22 @@ export const CARD_TYPES = {
   CHALLENGE: 'challenge',
   SCENARIO: 'scenario',
   CONNECTION: 'connection',
-  WILD: 'wild'
+  WILD: 'wild',
 };
 
 export const SESSION_STATUS = {
   WAITING: 'waiting',
   ACTIVE: 'active',
   PAUSED: 'paused',
-  COMPLETED: 'completed'
+  COMPLETED: 'completed',
 };
 
 export const DECK_TIERS = {
   FREE: 'FREE',
-  PREMIUM: 'PREMIUM'
+  PREMIUM: 'PREMIUM',
 };
 
 export const LANGUAGES = {
   EN: 'en',
-  VN: 'vn'
+  VN: 'vn',
 };

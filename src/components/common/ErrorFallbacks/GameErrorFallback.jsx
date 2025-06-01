@@ -7,32 +7,27 @@ const GameErrorFallback = ({ error, retry }) => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full text-center">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+      <div className="w-full max-w-md text-center">
         <div className="mb-6">
-          <div className="mx-auto w-16 h-16 bg-warning-100 rounded-full flex items-center justify-center">
-            <AlertTriangle className="w-8 h-8 text-warning-600" />
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-warning-100">
+            <AlertTriangle className="h-8 w-8 text-warning-600" />
           </div>
         </div>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          Game Session Error
-        </h1>
+        <h1 className="mb-2 text-2xl font-bold text-gray-900">Game Session Error</h1>
 
-        <p className="text-gray-600 mb-6">
+        <p className="mb-6 text-gray-600">
           There was a problem with your game session. Your progress may have been saved.
         </p>
 
         <div className="flex flex-col gap-3">
-          <Button
-            leftIcon={<RotateCcw className="w-4 h-4" />}
-            onClick={retry}
-          >
+          <Button leftIcon={<RotateCcw className="h-4 w-4" />} onClick={retry}>
             Retry Session
           </Button>
           <Button
             variant="outline"
-            leftIcon={<Home className="w-4 h-4" />}
+            leftIcon={<Home className="h-4 w-4" />}
             onClick={() => navigate('/dashboard')}
           >
             Back to Dashboard

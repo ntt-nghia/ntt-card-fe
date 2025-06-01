@@ -2,27 +2,22 @@ import React from 'react';
 import { CheckCircle, SkipForward } from 'lucide-react';
 import Button from '@components/common/Button';
 
-const CardDisplay = ({
-  card,
-  onComplete,
-  onSkip,
-  isLoading = false
-}) => {
+const CardDisplay = ({ card, onComplete, onSkip, isLoading = false }) => {
   if (!card) {
     return null;
   }
 
   return (
     <div className="text-center">
-      <div className="card p-8 mb-8 max-w-2xl mx-auto">
+      <div className="card mx-auto mb-8 max-w-2xl p-8">
         <div className="mb-6">
           {/* Card Type Badge */}
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 mb-4">
+          <span className="mb-4 inline-flex items-center rounded-full bg-primary-100 px-3 py-1 text-sm font-medium text-primary-800">
             {card.type?.charAt(0).toUpperCase() + card.type?.slice(1)} Card
           </span>
 
           {/* Card Content */}
-          <h2 className="text-2xl font-heading font-bold text-gray-900 mb-4 text-balance">
+          <h2 className="mb-4 text-balance font-heading text-2xl font-bold text-gray-900">
             {card.displayContent || card.content}
           </h2>
 
@@ -32,7 +27,7 @@ const CardDisplay = ({
               {card.categories.map((category, index) => (
                 <span
                   key={index}
-                  className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full"
+                  className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600"
                 >
                   {category}
                 </span>
@@ -46,7 +41,7 @@ const CardDisplay = ({
               {card.contentWarnings.map((warning, index) => (
                 <span
                   key={index}
-                  className="text-xs px-2 py-1 bg-warning-100 text-warning-700 rounded-full"
+                  className="rounded-full bg-warning-100 px-2 py-1 text-xs text-warning-700"
                 >
                   ⚠️ {warning}
                 </span>
@@ -56,11 +51,11 @@ const CardDisplay = ({
         </div>
 
         {/* Card Actions */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="flex flex-col justify-center gap-4 sm:flex-row">
           <Button
             variant="success"
             size="lg"
-            leftIcon={<CheckCircle className="w-5 h-5" />}
+            leftIcon={<CheckCircle className="h-5 w-5" />}
             onClick={onComplete}
             disabled={isLoading}
             className="btn-touch"
@@ -70,7 +65,7 @@ const CardDisplay = ({
           <Button
             variant="outline"
             size="lg"
-            leftIcon={<SkipForward className="w-5 h-5" />}
+            leftIcon={<SkipForward className="h-5 w-5" />}
             onClick={onSkip}
             disabled={isLoading}
             className="btn-touch"

@@ -106,17 +106,13 @@ const deckSlice = createSlice({
       const { deckId, unlockedDecks } = action.payload;
 
       // Update the deck in allDecks to show it's unlocked
-      state.allDecks = state.allDecks.map(deck =>
-        deck.id === deckId
-          ? { ...deck, isUnlocked: true, hasAccess: true }
-          : deck
+      state.allDecks = state.allDecks.map((deck) =>
+        deck.id === deckId ? { ...deck, isUnlocked: true, hasAccess: true } : deck
       );
 
       // Update filtered decks as well
-      state.filteredDecks = state.filteredDecks.map(deck =>
-        deck.id === deckId
-          ? { ...deck, isUnlocked: true, hasAccess: true }
-          : deck
+      state.filteredDecks = state.filteredDecks.map((deck) =>
+        deck.id === deckId ? { ...deck, isUnlocked: true, hasAccess: true } : deck
       );
 
       // Update current deck if it's the one being unlocked
@@ -124,7 +120,7 @@ const deckSlice = createSlice({
         state.currentDeck = {
           ...state.currentDeck,
           isUnlocked: true,
-          hasAccess: true
+          hasAccess: true,
         };
       }
 
@@ -163,27 +159,25 @@ const deckSlice = createSlice({
 
       // Filter by relationship type
       if (state.filters.relationshipType) {
-        filtered = filtered.filter(deck =>
-          deck.relationshipType === state.filters.relationshipType
+        filtered = filtered.filter(
+          (deck) => deck.relationshipType === state.filters.relationshipType
         );
       }
 
       // Filter by deck tier (FREE/PREMIUM)
       if (state.filters.tier) {
-        filtered = filtered.filter(deck => deck.tier === state.filters.tier);
+        filtered = filtered.filter((deck) => deck.tier === state.filters.tier);
       }
 
       // Filter by search query
       if (state.filters.searchQuery) {
         const query = state.filters.searchQuery.toLowerCase();
-        filtered = filtered.filter(deck => {
+        filtered = filtered.filter((deck) => {
           const name = deck.name?.en?.toLowerCase() || '';
           const description = deck.description?.en?.toLowerCase() || '';
           const tags = deck.tags?.join(' ').toLowerCase() || '';
 
-          return name.includes(query) ||
-                 description.includes(query) ||
-                 tags.includes(query);
+          return name.includes(query) || description.includes(query) || tags.includes(query);
         });
       }
 

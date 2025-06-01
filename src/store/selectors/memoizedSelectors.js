@@ -2,22 +2,16 @@ import { createSelector, createSelectorCreator, defaultMemoize } from 'reselect'
 import { isEqual } from 'lodash';
 
 // Create a selector that uses deep equality check
-const createDeepEqualSelector = createSelectorCreator(
-  defaultMemoize,
-  isEqual
-);
+const createDeepEqualSelector = createSelectorCreator(defaultMemoize, isEqual);
 
 // Memoized game selectors
-export const getMemoizedGameState = createSelector(
-  [(state) => state.game],
-  (game) => game
-);
+export const getMemoizedGameState = createSelector([(state) => state.game], (game) => game);
 
 export const getMemoizedSessionProgress = createSelector(
   [
     (state) => state.game.drawnCards,
     (state) => state.game.completedCards,
-    (state) => state.game.cardsRemaining
+    (state) => state.game.cardsRemaining,
   ],
   (drawnCards, completedCards, cardsRemaining) => {
     const totalCards = drawnCards.length + cardsRemaining;
@@ -27,7 +21,7 @@ export const getMemoizedSessionProgress = createSelector(
       progress: Math.round(progress),
       completed: completedCards.length,
       total: totalCards,
-      remaining: cardsRemaining
+      remaining: cardsRemaining,
     };
   }
 );
@@ -47,18 +41,16 @@ export const getMemoizedUserStats = createDeepEqualSelector(
       relationshipBreakdown: Object.entries(relationshipUsage).map(([type, count]) => ({
         type,
         count,
-        percentage: totalSessions > 0 ? Math.round((count / totalSessions) * 100) : 0
+        percentage: totalSessions > 0 ? Math.round((count / totalSessions) * 100) : 0,
       })),
-      experienceLevel: totalSessions < 5 ? 'beginner' : totalSessions < 20 ? 'intermediate' : 'expert'
+      experienceLevel:
+        totalSessions < 5 ? 'beginner' : totalSessions < 20 ? 'intermediate' : 'expert',
     };
   }
 );
 
 export const getMemoizedDeckRecommendations = createSelector(
-  [
-    (state) => state.deck.filteredDecks,
-    (state) => state.user.statistics
-  ],
+  [(state) => state.deck.filteredDecks, (state) => state.user.statistics],
   (decks, statistics) => {
     if (!statistics || !decks.length) return [];
 
@@ -66,7 +58,7 @@ export const getMemoizedDeckRecommendations = createSelector(
     const experience = statistics.totalSessions || 0;
 
     return decks
-      .filter(deck => {
+      .filter((deck) => {
         if (favoriteType && deck.relationshipType === favoriteType) return true;
         if (experience < 5 && deck.tier === 'FREE') return true;
         if (experience >= 10 && deck.tier === 'PREMIUM') return true;

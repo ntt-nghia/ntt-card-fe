@@ -9,7 +9,7 @@ class ErrorBoundary extends React.Component {
       hasError: false,
       error: null,
       errorInfo: null,
-      retryCount: 0
+      retryCount: 0,
     };
   }
 
@@ -23,7 +23,7 @@ class ErrorBoundary extends React.Component {
     this.setState({
       error,
       errorInfo,
-      hasError: true
+      hasError: true,
     });
 
     // Report to error tracking service
@@ -31,19 +31,19 @@ class ErrorBoundary extends React.Component {
       window.Sentry.captureException(error, {
         contexts: {
           react: {
-            componentStack: errorInfo.componentStack
-          }
-        }
+            componentStack: errorInfo.componentStack,
+          },
+        },
       });
     }
   }
 
   handleRetry = () => {
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       hasError: false,
       error: null,
       errorInfo: null,
-      retryCount: prevState.retryCount + 1
+      retryCount: prevState.retryCount + 1,
     }));
   };
 
@@ -64,20 +64,18 @@ class ErrorBoundary extends React.Component {
       // Different error displays based on level
       if (level === 'component') {
         return (
-          <div className="p-4 border border-error-200 bg-error-50 rounded-lg">
+          <div className="rounded-lg border border-error-200 bg-error-50 p-4">
             <div className="flex items-center text-error-700">
-              <AlertTriangle className="w-5 h-5 mr-2" />
+              <AlertTriangle className="mr-2 h-5 w-5" />
               <span className="font-medium">Component Error</span>
             </div>
-            <p className="text-sm text-error-600 mt-1">
-              Something went wrong with this component.
-            </p>
+            <p className="mt-1 text-sm text-error-600">Something went wrong with this component.</p>
             <Button
               variant="outline"
               size="sm"
               onClick={this.handleRetry}
               className="mt-2"
-              leftIcon={<RefreshCw className="w-4 h-4" />}
+              leftIcon={<RefreshCw className="h-4 w-4" />}
             >
               Try Again
             </Button>
@@ -87,33 +85,28 @@ class ErrorBoundary extends React.Component {
 
       // Full page error
       return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-          <div className="max-w-md w-full text-center">
+        <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+          <div className="w-full max-w-md text-center">
             <div className="mb-6">
-              <div className="mx-auto w-16 h-16 bg-error-100 rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-8 h-8 text-error-600" />
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-error-100">
+                <AlertTriangle className="h-8 w-8 text-error-600" />
               </div>
             </div>
 
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Oops! Something went wrong
-            </h1>
+            <h1 className="mb-2 text-2xl font-bold text-gray-900">Oops! Something went wrong</h1>
 
-            <p className="text-gray-600 mb-6">
+            <p className="mb-6 text-gray-600">
               We encountered an unexpected error. This has been reported to our team.
             </p>
 
             {retryCount < 3 && (
-              <div className="flex flex-col sm:flex-row gap-3 justify-center mb-4">
-                <Button
-                  leftIcon={<RefreshCw className="w-4 h-4" />}
-                  onClick={this.handleRetry}
-                >
+              <div className="mb-4 flex flex-col justify-center gap-3 sm:flex-row">
+                <Button leftIcon={<RefreshCw className="h-4 w-4" />} onClick={this.handleRetry}>
                   Try Again
                 </Button>
                 <Button
                   variant="outline"
-                  leftIcon={<Home className="w-4 h-4" />}
+                  leftIcon={<Home className="h-4 w-4" />}
                   onClick={this.handleGoHome}
                 >
                   Go Home
@@ -128,7 +121,7 @@ class ErrorBoundary extends React.Component {
                 </p>
                 <Button
                   variant="outline"
-                  leftIcon={<Home className="w-4 h-4" />}
+                  leftIcon={<Home className="h-4 w-4" />}
                   onClick={this.handleGoHome}
                   fullWidth
                 >
@@ -142,7 +135,7 @@ class ErrorBoundary extends React.Component {
                 <summary className="cursor-pointer text-sm font-medium text-gray-700">
                   Error Details (Development)
                 </summary>
-                <pre className="mt-2 text-xs bg-gray-100 p-3 rounded overflow-auto max-h-40">
+                <pre className="mt-2 max-h-40 overflow-auto rounded bg-gray-100 p-3 text-xs">
                   {error.toString()}
                   {this.state.errorInfo?.componentStack}
                 </pre>
