@@ -58,82 +58,6 @@ export const formatDuration = (milliseconds, options = {}) => {
 
   return short ? parts.join(' ') : parts.join(', ');
 };
-
-/**
- * Format date to human-readable string
- * @param {Date|string|number} date - Date to format
- * @param {Object} options - Formatting options
- * @param {boolean} options.relative - Use relative format (e.g., "2 days ago")
- * @param {string} options.format - Date format: 'short', 'medium', 'long', 'full'
- * @param {boolean} options.includeTime - Include time in the output
- * @returns {string} Formatted date string
- */
-export const formatDate = (date, options = {}) => {
-  if (!date) {
-    return '';
-  }
-
-  const { relative = false, format = 'medium', includeTime = false } = options;
-  const dateObj = new Date(date);
-
-  if (isNaN(dateObj.getTime())) {
-    return 'Invalid date';
-  }
-
-  if (relative) {
-    return formatRelativeTime(dateObj);
-  }
-
-  const formatOptions = {
-    short: { dateStyle: 'short' },
-    medium: { dateStyle: 'medium' },
-    long: { dateStyle: 'long' },
-    full: { dateStyle: 'full' },
-  };
-
-  const baseOptions = formatOptions[format] || formatOptions.medium;
-
-  if (includeTime) {
-    baseOptions.timeStyle = 'short';
-  }
-
-  return new Intl.DateTimeFormat('en-US', baseOptions).format(dateObj);
-};
-
-/**
- * Format relative time (e.g., "2 hours ago", "in 3 days")
- * @param {Date} date - Date to format
- * @returns {string} Relative time string
- */
-export const formatRelativeTime = (date) => {
-  if (!date) {
-    return '';
-  }
-
-  const now = new Date();
-  const diffMs = date - now;
-  const diffSeconds = Math.floor(diffMs / 1000);
-  const diffMinutes = Math.floor(diffSeconds / 60);
-  const diffHours = Math.floor(diffMinutes / 60);
-  const diffDays = Math.floor(diffHours / 24);
-
-  const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
-
-  if (Math.abs(diffDays) >= 1) {
-    return rtf.format(diffDays, 'day');
-  }
-
-  if (Math.abs(diffHours) >= 1) {
-    return rtf.format(diffHours, 'hour');
-  }
-
-  if (Math.abs(diffMinutes) >= 1) {
-    return rtf.format(diffMinutes, 'minute');
-  }
-
-  return rtf.format(diffSeconds, 'second');
-};
-
 /**
  * Format numbers with appropriate units and formatting
  * @param {number} number - Number to format
@@ -332,26 +256,6 @@ export const formatUserStatistics = (userStats) => {
       : 'None',
     totalPlayTime: formatDuration(totalPlayTime, { short: false, includeSeconds: false }),
   };
-};
-
-/**
- * Format file sizes
- * @param {number} bytes - Size in bytes
- * @param {boolean} binary - Use binary (1024) or decimal (1000) units
- * @returns {string} Formatted file size
- */
-export const formatFileSize = (bytes, binary = true) => {
-  if (!bytes || bytes === 0) {
-    return '0 B';
-  }
-
-  const units = binary ? ['B', 'KiB', 'MiB', 'GiB', 'TiB'] : ['B', 'KB', 'MB', 'GB', 'TB'];
-
-  const base = binary ? 1024 : 1000;
-  const index = Math.floor(Math.log(bytes) / Math.log(base));
-  const size = bytes / Math.pow(base, index);
-
-  return `${size.toFixed(1)} ${units[index]}`;
 };
 
 /**
