@@ -1,92 +1,176 @@
-import React, {useEffect} from 'react';
-import {Route, Routes} from 'react-router-dom';
-import {useDispatch, useSelector} from 'react-redux';
+// src/App.jsx - Updated with proper error boundaries and loading states
+import React, { useEffect, Suspense } from 'react';
+import { Route, Routes } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 
-import {authActions} from '@store/auth/authSlice';
-import {authSelectors} from '@store/auth/authSelectors';
-import {Layout} from '@components/common/Layout';
-import ProtectedRoute from '@components/auth/ProtectedRoute/ProtectedRoute.jsx';
+import { authActions } from '@store/auth/authSlice';
+import { authSelectors } from '@store/auth/authSelectors';
+import { Layout } from '@components/common/Layout';
+import ProtectedRoute from '@components/auth/ProtectedRoute/ProtectedRoute';
+import ErrorBoundary from '@components/common/ErrorBoundary';
+import GameErrorFallback from '@components/common/ErrorFallbacks/GameErrorFallback';
 import Loading from '@components/common/Loading';
 
-// Pages
-import Home from '@pages/Home/Home.jsx';
-import Login from '@pages/Login';
-import Register from '@pages/Register';
-import Dashboard from '@pages/Dashboard';
-import Game from '@pages/Game/Game.jsx';
-import Profile from '@pages/Profile';
-import Admin from '@pages/Admin';
-import NotFound from '@pages/NotFound';
+// Lazy load pages for better performance
+const Home = React.lazy(() => import('@pages/Home/Home.jsx'));
+const Login = React.lazy(() => import('@pages/Login'));
+const Register = React.lazy(() => import('@pages/Register'));
+const Dashboard = React.lazy(() => import('@pages/Dashboard'));
+const Game = React.lazy(() => import('@pages/Game/Game.jsx'));
+const Profile = React.lazy(() => import('@pages/Profile'));
+const Admin = React.lazy(() => import('@pages/Admin'));
+const NotFound = React.lazy(() => import('@pages/NotFound'));
+
+// Loading component for suspense
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <Loading size="large" text="Loading..." />
+  </div>
+);
+
+// Auth loading component
+const AuthLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <Loading size="large" text="Checking authentication..." />
+  </div>
+);
 
 function App() {
   const dispatch = useDispatch();
-  const {isLoading, isAuthenticated} = useSelector(authSelectors.getAuthState);
+  const { isLoading, isInitialized, error } = useSelector(authSelectors.getAuthState);
 
   useEffect(() => {
     // Check for existing auth token on app startup
     dispatch(authActions.checkAuthState());
   }, [dispatch]);
 
-  if (isLoading) {
+  // Show loading while checking auth
+  if (isLoading && !isInitialized) {
+    return <AuthLoader />;
+  }
+
+  // Show error if auth check failed critically
+  if (error && !isInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loading size="large"/>
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Unable to Initialize App
+          </h1>
+          <p className="text-gray-600 mb-6">
+            There was a problem starting the application. Please try refreshing the page.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
+          >
+            Refresh Page
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Routes>
-        <Route path="/" element={<Layout/>}>
-          <Route index element={<Home/>}/>
-          <Route path="login" element={<Login/>}/>
-          <Route path="register" element={<Register/>}/>
-        </Route>
+    <ErrorBoundary level="app">
+      <div className="min-h-screen bg-gray-50">
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            {/* Public routes with layout */}
+            <Route path="/" element={<Layout />}>
+              <Route
+                index
+                element={
+                  <ErrorBoundary level="page">
+                    <Home />
+                  </ErrorBoundary>
+                }
+              />
+              <Route
+                path="login"
+                element={
+                  <ErrorBoundary level="page">
+                    <Login />
+                  </ErrorBoundary>
+                }
+              />
+              <Route
+                path="register"
+                element={
+                  <ErrorBoundary level="page">
+                    <Register />
+                  </ErrorBoundary>
+                }
+              />
+            </Route>
 
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Dashboard/>
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
+            {/* Protected routes with layout */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <ErrorBoundary level="page">
+                    <Layout>
+                      <Dashboard />
+                    </Layout>
+                  </ErrorBoundary>
+                </ProtectedRoute>
+              }
+            />
 
-        <Route
-          path="/game/:sessionId"
-          element={
-            <ProtectedRoute>
-              <Game/>
-            </ProtectedRoute>
-          }
-        />
+            {/* Game route without layout and custom error boundary */}
+            <Route
+              path="/game/:sessionId"
+              element={
+                <ProtectedRoute>
+                  <ErrorBoundary
+                    level="page"
+                    fallback={GameErrorFallback}
+                  >
+                    <Game />
+                  </ErrorBoundary>
+                </ProtectedRoute>
+              }
+            />
 
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Profile/>
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ErrorBoundary level="page">
+                    <Layout>
+                      <Profile />
+                    </Layout>
+                  </ErrorBoundary>
+                </ProtectedRoute>
+              }
+            />
 
-        <Route
-          path="/admin/*"
-          element={
-            <ProtectedRoute requireAdmin>
-              <Admin/>
-            </ProtectedRoute>
-          }
-        />
+            {/* Admin routes */}
+            <Route
+              path="/admin/*"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <ErrorBoundary level="page">
+                    <Admin />
+                  </ErrorBoundary>
+                </ProtectedRoute>
+              }
+            />
 
-        <Route path="*" element={<NotFound/>}/>
-      </Routes>
-    </div>
+            {/* 404 route */}
+            <Route
+              path="*"
+              element={
+                <ErrorBoundary level="page">
+                  <NotFound />
+                </ErrorBoundary>
+              }
+            />
+          </Routes>
+        </Suspense>
+      </div>
+    </ErrorBoundary>
   );
 }
 
