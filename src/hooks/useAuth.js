@@ -1,6 +1,7 @@
-import { useSelector, useDispatch } from 'react-redux';
-import { authSelectors } from '@store/auth/authSelectors';
-import { authActions } from '@store/auth/authSlice';
+import {useDispatch, useSelector} from 'react-redux';
+import {authSelectors} from '@store/auth/authSelectors';
+import {authActions} from '@store/auth/authSlice';
+import {useMemo} from "react";
 
 export const useAuth = () => {
   const dispatch = useDispatch();
@@ -28,12 +29,21 @@ export const useAuth = () => {
   };
 
   const forgotPassword = (email) => {
-    dispatch(authActions.forgotPasswordRequest({ email }));
+    dispatch(authActions.forgotPasswordRequest({email}));
   };
 
   const clearError = () => {
     dispatch(authActions.clearError());
   };
+
+  const actions = useMemo(() => ({
+    login: (credentials) => dispatch(authActions.loginRequest(credentials)),
+    register: (userData) => dispatch(authActions.registerRequest(userData)),
+    logout: () => dispatch(authActions.logoutRequest()),
+    updateProfile: (profileData) => dispatch(authActions.updateProfileRequest(profileData)),
+    forgotPassword: (email) => dispatch(authActions.forgotPasswordRequest({email})),
+    clearError: () => dispatch(authActions.clearError()),
+  }), [dispatch]);
 
   return {
     // State
@@ -45,11 +55,6 @@ export const useAuth = () => {
     authState,
 
     // Actions
-    login,
-    register,
-    logout,
-    updateProfile,
-    forgotPassword,
-    clearError,
+    ...actions
   };
 };

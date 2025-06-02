@@ -1,4 +1,5 @@
-import { apiMethods, ENDPOINTS } from './api';
+import {apiMethods, ENDPOINTS} from './api';
+import {requestDeduplicator} from "@utils/requestDeduplication.js";
 
 // User service functions
 export const userService = {
@@ -32,8 +33,9 @@ export const userService = {
 
   // Get user statistics
   getStatistics: async () => {
-    const response = await apiMethods.get(ENDPOINTS.USERS.STATISTICS);
-    return response.data;
+    return requestDeduplicator.deduplicate('getStatistics', async () =>
+      await apiMethods.get(ENDPOINTS.USERS.STATISTICS).data
+    );
   },
 
   // Record game completion

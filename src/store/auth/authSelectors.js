@@ -1,11 +1,18 @@
+import {createSelector} from "@reduxjs/toolkit";
+
 export const authSelectors = {
   getAuthState: (state) => state.auth,
 
-  getUser: (state) => state.auth.user,
-
+  getUser: createSelector(
+    [(state) => state.auth.user],
+    (user) => user
+  ),
   getToken: (state) => state.auth.token,
 
-  getIsAuthenticated: (state) => state.auth.isAuthenticated,
+  getIsAuthenticated: createSelector(
+    [(state) => state.auth.isAuthenticated],
+    (isAuthenticated) => isAuthenticated
+  ),
 
   getIsLoading: (state) => state.auth.isLoading,
 
@@ -26,4 +33,6 @@ export const authSelectors = {
   getUserLanguage: (state) => state.auth.user?.language || 'en',
 
   getUserStatistics: (state) => state.auth.user?.statistics,
+
+
 };

@@ -1,4 +1,5 @@
 import firebaseAuthService from './firebaseAuth';
+import {requestDeduplicator} from "@utils/requestDeduplication.js";
 
 // Authentication service functions using Firebase
 export const authService = {
@@ -19,7 +20,9 @@ export const authService = {
 
   // Get user profile
   getProfile: async () => {
-    return await firebaseAuthService.updateProfile({});
+    return requestDeduplicator.deduplicate('getProfile', async () =>
+      await firebaseAuthService.updateProfile({})
+    );
   },
 
   // Update user profile
@@ -32,8 +35,8 @@ export const authService = {
     // This still goes directly to backend since it doesn't require auth
     const response = await fetch('/api/v1/auth/forgot-password', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email}),
     });
 
     if (!response.ok) {

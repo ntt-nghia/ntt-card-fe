@@ -1,4 +1,3 @@
-// src/pages/Dashboard/Dashboard.jsx - Updated with controlled effects and error handling
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -62,7 +61,6 @@ const Dashboard = () => {
     }
   );
 
-  // Controlled effect for loading data with proper error handling
   useControlledEffect(
     () => {
       if (hasTriedLoading) return;
@@ -70,24 +68,16 @@ const Dashboard = () => {
       console.log('Dashboard: Loading initial data...');
       setHasTriedLoading(true);
 
-      // Load statistics first
-      const statsPromise = safeDispatch({ type: 'GET_STATISTICS' });
-
-      // Load decks with a slight delay to avoid overwhelming the server
+      safeDispatch({ type: 'GET_STATISTICS' });
       setTimeout(() => {
         safeDispatch({ type: 'GET_DECKS' });
       }, 500);
-
-      return () => {
-        // Cleanup if needed
-        console.log('Dashboard: Cleaning up data loading...');
-      };
     },
-    [user?.uid, hasTriedLoading], // Only depend on user ID and loading state
+    [user?.uid ? user.uid : null],
     {
       enabled: !!user?.uid && !hasTriedLoading,
-      maxExecutions: 1, // Only execute once
-      cooldown: 5000, // 5 second cooldown
+      maxExecutions: 1,
+      cooldown: 5000,
     }
   );
 
