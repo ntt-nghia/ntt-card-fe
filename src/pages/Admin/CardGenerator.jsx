@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import {
+  AlertCircle,
   BookOpen,
-  CheckCircle,
   Eye,
+  Grid3X3,
+  List,
   Plus,
   RefreshCw,
   Save,
@@ -13,8 +15,9 @@ import {
   Wand2,
 } from 'lucide-react';
 import adminService from '@services/admin.js';
+import AdminCard from '@components/admin/AdminCard';
 import Button from '@components/common/Button/index.js';
-import { CARD_CONNECTION_LEVELS, LANGUAGES, RELATIONSHIP_TYPES } from '@utils/constants.js';
+import { CARD_CONNECTION_LEVELS, CARD_RELATIONSHIP_TYPES, LANGUAGES, RELATIONSHIP_TYPES } from '@utils/constants.js';
 
 const toast = {
   success: (message) => console.log('SUCCESS:', message),
@@ -22,7 +25,6 @@ const toast = {
 };
 
 const CardGenerator = () => {
-
   // Form state
   const [formData, setFormData] = useState({
     relationshipType: '',
@@ -44,6 +46,7 @@ const CardGenerator = () => {
   const [availableDecks, setAvailableDecks] = useState([]);
   const [batchConfigurations, setBatchConfigurations] = useState([]);
   const [generationAnalytics, setGenerationAnalytics] = useState(null);
+  const [viewMode, setViewMode] = useState('grid');
 
   // Load available decks on component mount
   useEffect(() => {
@@ -86,36 +89,28 @@ const CardGenerator = () => {
     }));
   };
 
-  const validateForm = () => {
-    const validation = adminService.validateGenerationParams(formData);
-
-    if (!validation.isValid) {
-      validation.errors.forEach(error => toast.error(error));
-      return false;
+  const handleGenerate = async (isPreview = false) => {
+    if (!formData.relationshipType || !formData.connectionLevel) {
+      toast.error('Please select relationship type and connection level');
+      return;
     }
-
-    return true;
-  };
-
-  const handleGenerate = async (preview = false) => {
-    if (!validateForm()) return;
 
     setIsGenerating(true);
 
     try {
-      const payload = {
+      const generationParams = {
         ...formData,
-        preview,
+        preview: isPreview,
       };
 
-      const response = await adminService.generateCards(payload);
-      console.log(response.data.success);
-      if (response.data.success === true || response.data.success === 'true') {
+      const response = await adminService.generateCards(generationParams);
+
+      if (response.data.status === 'success') {
         setGeneratedCards(response.data.data.cards || []);
-        setSelectedCards([]); // Reset selection
+        setSelectedCards([]);
 
         toast.success(
-          preview
+          isPreview
             ? `Generated ${response.data.data.cards?.length || 0} preview cards`
             : `Successfully generated ${response.data.data.cards?.length || 0} cards`,
         );
@@ -162,9 +157,9 @@ const CardGenerator = () => {
   };
 
   const addBatchConfiguration = () => {
-    const validation = adminService.validateGenerationParams(formData);
+    const validation = adminService.validateGenerationParams?.(formData);
 
-    if (!validation.isValid) {
+    if (validation && !validation.isValid) {
       validation.errors.forEach(error => toast.error(error));
       return;
     }
@@ -181,19 +176,11 @@ const CardGenerator = () => {
     setBatchConfigurations(prev => prev.filter(config => config.id !== id));
   };
 
-  const handleCardSelection = (cardId) => {
-    setSelectedCards(prev =>
-      prev.includes(cardId)
-        ? prev.filter(id => id !== cardId)
-        : [...prev, cardId],
-    );
-  };
-
-  const handleSelectAll = () => {
-    if (selectedCards.length === generatedCards.length) {
-      setSelectedCards([]);
+  const handleCardSelection = (cardId, isSelected) => {
+    if (isSelected) {
+      setSelectedCards(prev => [...prev, cardId]);
     } else {
-      setSelectedCards(generatedCards.map(card => card.id));
+      setSelectedCards(prev => prev.filter(id => id !== cardId));
     }
   };
 
@@ -206,33 +193,75 @@ const CardGenerator = () => {
     try {
       const cardsToSave = generatedCards.filter(card => selectedCards.includes(card.id));
 
-      const response = await adminService.bulkCreateCards(cardsToSave);
+      // Update status from preview/review to active for selected cards
+      const updatePromises = cardsToSave.map(card =>
+        adminService.updateCard(card.id, { status: 'active' }),
+      );
 
-      if (response.data.status === 'success') {
-        toast.success(`Successfully saved ${selectedCards.length} cards`);
-        setSelectedCards([]);
+      await Promise.all(updatePromises);
 
-        // Optionally remove saved cards from the generated list
-        setGeneratedCards(prev => prev.filter(card => !selectedCards.includes(card.id)));
-      }
+      toast.success(`Successfully saved ${selectedCards.length} cards`);
+      setSelectedCards([]);
+
+      // Refresh the generated cards to show updated status
+      setGeneratedCards(prev =>
+        prev.map(card =>
+          selectedCards.includes(card.id)
+            ? { ...card, status: 'active' }
+            : card,
+        ),
+      );
     } catch (error) {
-      console.error('Failed to save cards:', error);
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to save selected cards';
-      toast.error(errorMessage);
+      console.error('Save failed:', error);
+      toast.error('Failed to save selected cards');
     }
   };
 
-  const quality = adminService.getQualityDescription(formData.theta);
+  const handleDeleteCard = (card) => {
+    setGeneratedCards(prev => prev.filter(c => c.id !== card.id));
+    setSelectedCards(prev => prev.filter(id => id !== card.id));
+    toast.success('Card removed from preview');
+  };
 
-  // Map color names to Tailwind classes
-  const getColorClass = (color) => {
-    const colorMap = {
-      gray: 'text-gray-600',
-      blue: 'text-blue-600',
-      purple: 'text-purple-600',
-      gold: 'text-yellow-600',
-    };
-    return colorMap[color] || 'text-gray-600';
+  const handleRegenerateCard = async (card) => {
+    try {
+      const response = await adminService.generateCards({
+        ...formData,
+        count: 1,
+        preview: true,
+      });
+
+      if (response.data.status === 'success' && response.data.data.cards.length > 0) {
+        const newCard = response.data.data.cards[0];
+        setGeneratedCards(prev =>
+          prev.map(c => c.id === card.id ? newCard : c),
+        );
+        toast.success('Card regenerated successfully');
+      }
+    } catch (error) {
+      console.error('Regeneration failed:', error);
+      toast.error('Failed to regenerate card');
+    }
+  };
+
+  const clearGeneration = () => {
+    setGeneratedCards([]);
+    setSelectedCards([]);
+  };
+
+  const selectAllGenerated = () => {
+    setSelectedCards(generatedCards.map(card => card.id));
+  };
+
+  const clearSelection = () => {
+    setSelectedCards([]);
+  };
+
+  const getQualityDescription = (theta) => {
+    if (theta <= 0.3) return 'Basic';
+    if (theta <= 0.5) return 'Standard';
+    if (theta <= 0.7) return 'High';
+    return 'Premium';
   };
 
   return (
@@ -240,32 +269,31 @@ const CardGenerator = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-heading text-2xl font-bold text-gray-900 flex items-center">
-            <Wand2 className="h-6 w-6 mr-2 text-purple-600" />
-            AI Card Generator
-          </h1>
-          <p className="text-gray-600 mt-1">Generate high-quality connection cards using AI</p>
+          <h1 className="font-heading text-2xl font-bold text-gray-900">AI Card Generator</h1>
+          <p className="text-gray-600 mt-1">
+            Generate new cards using AI with customizable parameters
+          </p>
         </div>
 
         {generationAnalytics && (
-          <div className="text-right">
-            <div className="text-sm text-gray-500">Today's generations</div>
-            <div className="font-semibold text-lg">{generationAnalytics.dailyGenerations || 0}</div>
+          <div className="text-right text-sm text-gray-600">
+            <div>Total Generated: {generationAnalytics.totalGenerated || 0}</div>
+            <div>This Month: {generationAnalytics.monthlyGenerated || 0}</div>
           </div>
         )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Configuration Panel */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Basic Configuration */}
+        {/* Generation Form */}
+        <div className="lg:col-span-1 space-y-6">
+          {/* Basic Parameters */}
           <div className="card p-6">
             <h2 className="text-lg font-semibold mb-4 flex items-center">
-              <Settings className="h-5 w-5 mr-2" />
-              Basic Configuration
+              <Target className="h-5 w-5 mr-2" />
+              Generation Parameters
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
               {/* Relationship Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -274,13 +302,11 @@ const CardGenerator = () => {
                 <select
                   value={formData.relationshipType}
                   onChange={(e) => handleInputChange('relationshipType', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 >
                   <option value="">Select relationship type</option>
-                  {Object.entries(RELATIONSHIP_TYPES).map(([key, value]) => (
-                    <option key={key} value={value}>
-                      {key.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
-                    </option>
+                  {CARD_RELATIONSHIP_TYPES.map((it) => (
+                    <option key={it.value} value={it.value}>{it.label}</option>
                   ))}
                 </select>
               </div>
@@ -293,17 +319,17 @@ const CardGenerator = () => {
                 <select
                   value={formData.connectionLevel}
                   onChange={(e) => handleInputChange('connectionLevel', parseInt(e.target.value))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 >
-                  {CARD_CONNECTION_LEVELS.map(item => (
-                    <option key={item.label} value={item.value}>
-                      Level {item.value} - {item.label.toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                  {CARD_CONNECTION_LEVELS.map((it) => (
+                    <option key={it.value} value={parseInt(it.value)}>
+                      Level {it.value} - {it.label}
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* Card Count */}
+              {/* Count */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Number of Cards
@@ -314,73 +340,52 @@ const CardGenerator = () => {
                   max="20"
                   value={formData.count}
                   onChange={(e) => handleInputChange('count', parseInt(e.target.value))}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
 
-              {/* Target Deck */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Target Deck (Optional)
-                </label>
-                <select
-                  value={formData.deckId}
-                  onChange={(e) => handleInputChange('deckId', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                >
-                  <option value="">No specific deck</option>
-                  {availableDecks.map(deck => (
-                    <option key={deck.id} value={deck.id}>
-                      {deck.name.en} ({deck.tier})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Languages */}
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Target Languages *
-              </label>
-              <div className="flex space-x-4">
-                {Object.entries(LANGUAGES).map(([key, value]) => (
-                  <label key={key} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.targetLanguages.includes(value)}
-                      onChange={() => handleLanguageToggle(value)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm">
-                      {key === 'EN' ? 'English' : 'Vietnamese'}
-                    </span>
+              {/* Deck Assignment */}
+              {availableDecks.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Target Deck (Optional)
                   </label>
-                ))}
-              </div>
+                  <select
+                    value={formData.deckId}
+                    onChange={(e) => handleInputChange('deckId', e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  >
+                    <option value="">No specific deck</option>
+                    {availableDecks.map((deck) => (
+                      <option key={deck.id} value={deck.id}>
+                        {deck.name.en}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Advanced Configuration */}
+          {/* Advanced Settings */}
           <div className="card p-6">
             <button
               onClick={() => setShowAdvanced(!showAdvanced)}
-              className="flex items-center text-lg font-semibold mb-4 w-full text-left"
+              className="w-full flex items-center justify-between text-lg font-semibold mb-4"
             >
-              <Target className="h-5 w-5 mr-2" />
-              Advanced Configuration
-              <RefreshCw className={`h-4 w-4 ml-auto transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
+              <div className="flex items-center">
+                <Settings className="h-5 w-5 mr-2" />
+                Advanced Settings
+              </div>
+              <RefreshCw className={`h-4 w-4 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
             </button>
 
             {showAdvanced && (
               <div className="space-y-4">
-                {/* Quality Theta */}
+                {/* Quality (Theta) */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Quality Level (Theta): {formData.theta.toFixed(1)} -
-                    <span className={`ml-1 font-semibold ${getColorClass(quality.color)}`}>
-                      {quality.text}
-                    </span>
+                    Quality Level (θ = {formData.theta}) - {getQualityDescription(formData.theta)}
                   </label>
                   <input
                     type="range"
@@ -392,24 +397,32 @@ const CardGenerator = () => {
                     className="w-full"
                   />
                   <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>Basic (0.1)</span>
-                    <span>Standard (0.5)</span>
-                    <span>Elite (1.0)</span>
+                    <span>Basic</span>
+                    <span>Standard</span>
+                    <span>High</span>
+                    <span>Premium</span>
                   </div>
                 </div>
 
-                {/* Preview Mode */}
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="preview-mode"
-                    checked={formData.preview}
-                    onChange={(e) => handleInputChange('preview', e.target.checked)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <label htmlFor="preview-mode" className="ml-2 text-sm">
-                    Preview Mode (don't save to database)
+                {/* Languages */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Target Languages
                   </label>
+                  <div className="space-y-2">
+                    {Object.entries(LANGUAGES).map(([code, name]) => (
+
+                      <label key={code} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.targetLanguages.includes(code)}
+                          onChange={() => handleLanguageToggle(code)}
+                          className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                        />
+                        <span className="ml-2 text-sm">{name}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
@@ -422,53 +435,53 @@ const CardGenerator = () => {
               Batch Generation
             </h2>
 
-            <div className="space-y-4">
-              <div className="flex space-x-2">
-                <Button
-                  variant="outline"
-                  onClick={addBatchConfiguration}
-                  leftIcon={<Plus className="h-4 w-4" />}
-                >
-                  Add Current Config
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleBatchGenerate}
-                  disabled={isBatchGenerating || batchConfigurations.length === 0}
-                  leftIcon={<Sparkles className="h-4 w-4" />}
-                >
-                  {isBatchGenerating ? 'Generating...' : `Generate Batch (${batchConfigurations.length})`}
-                </Button>
-              </div>
+            <div className="space-y-3">
+              <Button
+                onClick={addBatchConfiguration}
+                variant="outline"
+                size="sm"
+                className="w-full"
+                leftIcon={<Plus className="h-4 w-4" />}
+              >
+                Add Current Config to Batch
+              </Button>
 
-              {batchConfigurations.length > 0 && (
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {batchConfigurations.map((config, index) => (
-                    <div key={config.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
-                      <div className="text-sm">
-                        <span className="font-medium">
-                          {adminService.formatGenerationConfig(config)}
-                        </span>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeBatchConfiguration(config.id)}
-                        leftIcon={<Trash2 className="h-3 w-3" />}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <Button
+                onClick={handleBatchGenerate}
+                disabled={isBatchGenerating || batchConfigurations.length === 0}
+                className="w-full"
+                leftIcon={<Sparkles className="h-4 w-4" />}
+              >
+                {isBatchGenerating
+                  ? 'Generating...'
+                  : `Generate Batch (${batchConfigurations.length})`}
+              </Button>
             </div>
-          </div>
-        </div>
 
-        {/* Action Panel */}
-        <div className="space-y-6">
-          {/* Generation Actions */}
+            {batchConfigurations.length > 0 && (
+              <div className="space-y-2 max-h-48 overflow-y-auto mt-4">
+                {batchConfigurations.map((config, index) => (
+                  <div key={config.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                    <div className="text-sm">
+                      <span className="font-medium">
+                        {config.relationshipType} - Level {config.connectionLevel} ({config.count} cards)
+                      </span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeBatchConfiguration(config.id)}
+                      leftIcon={<Trash2 className="h-3 w-3" />}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Action Panel */}
           <div className="card p-6">
             <h2 className="text-lg font-semibold mb-4">Actions</h2>
 
@@ -489,116 +502,139 @@ const CardGenerator = () => {
                 className="w-full"
                 leftIcon={<Wand2 className="h-4 w-4" />}
               >
-                {isGenerating ? 'Generating...' : 'Generate & Save'}
+                {isGenerating ? 'Generating...' : 'Generate & Save Cards'}
               </Button>
             </div>
           </div>
+        </div>
 
-          {/* Generation Stats */}
-          {generationAnalytics && (
-            <div className="card p-6">
-              <h2 className="text-lg font-semibold mb-4">Generation Stats</h2>
-
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Today:</span>
-                  <span className="font-semibold">{generationAnalytics.dailyGenerations || 0}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">This Month:</span>
-                  <span className="font-semibold">{generationAnalytics.monthlyGenerations || 0}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Success Rate:</span>
-                  <span className="font-semibold">{generationAnalytics.successRate || 0}%</span>
-                </div>
+        {/* Generated Cards Display */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Generated Cards Header */}
+          {generatedCards.length > 0 && (
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold">Generated Cards ({generatedCards.length})</h2>
+                {selectedCards.length > 0 && (
+                  <p className="text-sm text-gray-600">{selectedCards.length} selected</p>
+                )}
               </div>
+
+              <div className="flex items-center space-x-2">
+                {/* View Mode Toggle */}
+                <div className="flex items-center rounded-md border border-gray-300 p-1">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-1 rounded ${viewMode === 'grid' ? 'bg-primary-100 text-primary-600' : 'text-gray-400'}`}
+                  >
+                    <Grid3X3 className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-1 rounded ${viewMode === 'list' ? 'bg-primary-100 text-primary-600' : 'text-gray-400'}`}
+                  >
+                    <List className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearGeneration}
+                >
+                  Clear All
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Selection Actions */}
+          {generatedCards.length > 0 && (
+            <div className="card p-4">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center space-x-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={selectedCards.length === generatedCards.length ? clearSelection : selectAllGenerated}
+                  >
+                    {selectedCards.length === generatedCards.length ? 'Deselect All' : 'Select All'}
+                  </Button>
+
+                  {selectedCards.length > 0 && (
+                    <span className="text-sm text-gray-600">
+                      {selectedCards.length} of {generatedCards.length} selected
+                    </span>
+                  )}
+                </div>
+
+                {selectedCards.length > 0 && (
+                  <div className="flex space-x-2">
+                    <Button
+                      onClick={handleSaveSelected}
+                      size="sm"
+                      leftIcon={<Save className="h-4 w-4" />}
+                    >
+                      Save Selected ({selectedCards.length})
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Cards Grid */}
+          {isGenerating ? (
+            <div className="card p-12 text-center">
+              <Sparkles className="h-8 w-8 animate-pulse mx-auto text-primary-600 mb-4" />
+              <p className="text-gray-600">Generating cards with AI...</p>
+            </div>
+          ) : generatedCards.length > 0 ? (
+            <div className={`
+              ${viewMode === 'grid'
+              ? 'grid grid-cols-1 md:grid-cols-2 gap-6'
+              : 'space-y-4'
+            }
+            `}>
+              {generatedCards.map((card) => (
+                <AdminCard
+                  key={card.id}
+                  card={card}
+                  isSelected={selectedCards.includes(card.id)}
+                  onSelect={handleCardSelection}
+                  onDelete={handleDeleteCard}
+                  onDuplicate={() => handleRegenerateCard(card)}
+                  showSelection={true}
+                  showActions={true}
+                  variant={viewMode === 'list' ? 'compact' : 'default'}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="card p-12 text-center">
+              <Wand2 className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No Cards Generated Yet</h3>
+              <p className="text-gray-600 mb-6">
+                Configure your parameters and click "Preview Cards" or "Generate & Save Cards" to start.
+              </p>
+
+              {(!formData.relationshipType || !formData.connectionLevel) && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-left">
+                  <div className="flex">
+                    <AlertCircle className="h-5 w-5 text-yellow-600 mr-2" />
+                    <div>
+                      <h4 className="text-sm font-medium text-yellow-800">Missing Required Fields</h4>
+                      <p className="text-sm text-yellow-700 mt-1">
+                        Please select both relationship type and connection level to generate cards.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
       </div>
-
-      {/* Generated Cards */}
-      {generatedCards.length > 0 && (
-        <div className="card p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Generated Cards ({generatedCards.length})</h2>
-
-            <div className="flex space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSelectAll}
-                leftIcon={<CheckCircle className="h-4 w-4" />}
-              >
-                {selectedCards.length === generatedCards.length ? 'Deselect All' : 'Select All'}
-              </Button>
-
-              {selectedCards.length > 0 && (
-                <Button
-                  size="sm"
-                  onClick={handleSaveSelected}
-                  leftIcon={<Save className="h-4 w-4" />}
-                >
-                  Save Selected ({selectedCards.length})
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {generatedCards.map((card) => (
-              <div
-                key={card.id}
-                className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                  selectedCards.includes(card.id)
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-                onClick={() => handleCardSelection(card.id)}
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    card.tier === 'PREMIUM'
-                      ? 'bg-purple-100 text-purple-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {card.tier}
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={selectedCards.includes(card.id)}
-                    onChange={() => handleCardSelection(card.id)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </div>
-
-                <div className="text-sm font-medium text-gray-900 mb-2">
-                  {card.type?.toUpperCase()}
-                </div>
-
-                <div className="text-sm text-gray-700">
-                  {card.content?.en || card.content}
-                </div>
-
-                {card.content?.vn && (
-                  <div className="text-sm text-gray-600 mt-2 italic">
-                    {card.content.vn}
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
-                  <span>Level {card.connectionLevel}</span>
-                  {card.theta && (
-                    <span>θ={card.theta.toFixed(1)}</span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

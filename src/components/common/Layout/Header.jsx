@@ -11,6 +11,7 @@ const Header = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector(authSelectors.getAuthState);
+  const isAdmin = useSelector(authSelectors.getIsAdmin);
 
   const handleLogout = () => {
     dispatch(authActions.logoutRequest());
@@ -26,46 +27,16 @@ const Header = () => {
             <h1 className="font-heading text-xl font-bold text-primary-600">Connection Game</h1>
           </Link>
 
-          {/* Navigation */}
-          {/*<nav className="hidden md:flex space-x-8">*/}
-          {/*  {isAuthenticated ? (*/}
-          {/*    <>*/}
-          {/*      <Link*/}
-          {/*        to="/dashboard"*/}
-          {/*        className="text-gray-600 hover:text-primary-600 transition-colors"*/}
-          {/*      >*/}
-          {/*        Dashboard*/}
-          {/*      </Link>*/}
-          {/*      <Link*/}
-          {/*        to="/profile"*/}
-          {/*        className="text-gray-600 hover:text-primary-600 transition-colors"*/}
-          {/*      >*/}
-          {/*        Profile*/}
-          {/*      </Link>*/}
-          {/*    </>*/}
-          {/*  ) : (*/}
-          {/*    <>*/}
-          {/*      <Link*/}
-          {/*        to="/login"*/}
-          {/*        className="text-gray-600 hover:text-primary-600 transition-colors"*/}
-          {/*      >*/}
-          {/*        Login*/}
-          {/*      </Link>*/}
-          {/*      <Link*/}
-          {/*        to="/register"*/}
-          {/*        className="text-gray-600 hover:text-primary-600 transition-colors"*/}
-          {/*      >*/}
-          {/*        Register*/}
-          {/*      </Link>*/}
-          {/*    </>*/}
-          {/*  )}*/}
-          {/*</nav>*/}
-
           {/* User Menu */}
           <div className="flex items-center space-x-4">
             {isAuthenticated ? (
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-gray-600">{user?.displayName}</span>
+                {isAdmin &&
+                  <Button variant="ghost" size="sm" onClick={() => navigate('/admin')}>
+                    Admin Console
+                  </Button>
+                }
                 <Button
                   variant="ghost"
                   size="sm"

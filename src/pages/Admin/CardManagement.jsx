@@ -1,32 +1,24 @@
+// src/pages/Admin/CardManagement.jsx - Updated to use AdminCard component
 import React, { useCallback, useEffect, useState } from 'react';
 import {
+  CheckSquare,
   ChevronRight,
-  Clock,
   Download,
-  Edit,
-  Eye,
   Filter,
-  Globe,
-  MoreVertical,
+  Grid3X3,
+  List,
   Plus,
   RefreshCw,
   Search,
-  Tag,
+  Square,
   Trash2,
   Upload,
-  User,
   X,
 } from 'lucide-react';
 import Button from '@components/common/Button/index.js';
+import AdminCard from '@components/admin/AdminCard';
 import adminService from '@services/admin.js';
-import {
-  CARD_CONNECTION_LEVELS,
-  CARD_RELATIONSHIP_TYPES,
-  CARD_STATUSES,
-  CARD_TIERS,
-  CARD_TYPES,
-} from '@utils/constants.js';
-
+import { CARD_CONNECTION_LEVELS, CARD_RELATIONSHIP_TYPES, CARD_STATUSES, CARD_TYPES } from '@utils/constants.js';
 
 const toast = {
   success: (message) => console.log('SUCCESS:', message),
@@ -65,6 +57,8 @@ export const CardManagement = () => {
   const [selectedCards, setSelectedCards] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [availableDecks, setAvailableDecks] = useState([]);
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [editingCard, setEditingCard] = useState(null);
 
   // Load cards from backend
   const loadCards = useCallback(async (resetPagination = false) => {
@@ -89,9 +83,7 @@ export const CardManagement = () => {
         }
       });
 
-      // Use the getAllCards method from admin service
       const response = await adminService.getAllCards(queryParams);
-
       const { cards: newCards, pagination: newPagination } = response.data.data;
 
       if (resetPagination) {
@@ -109,14 +101,13 @@ export const CardManagement = () => {
     } catch (err) {
       console.error('Failed to load cards:', err);
       setError('Failed to load cards. Please try again.');
-      toast.error('Failed to load cards');
     } finally {
       setLoading(false);
     }
-  }, [filters, pagination.limit, pagination.offset]);
+  }, [filters, pagination.limit]);
 
-  // Load available decks for filter
-  const loadAvailableDecks = useCallback(async () => {
+  // Load available decks
+  const loadDecks = useCallback(async () => {
     try {
       const response = await adminService.getAllDecks();
       setAvailableDecks(response.data.data.decks || []);
@@ -128,38 +119,30 @@ export const CardManagement = () => {
   // Initial load
   useEffect(() => {
     loadCards(true);
-    loadAvailableDecks();
+    loadDecks();
   }, []);
 
   // Reload when filters change
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       loadCards(true);
-    }, 300); // Debounce filter changes
+    }, 300);
 
     return () => clearTimeout(timeoutId);
   }, [filters]);
 
-  // Handle filter changes
-  const handleFilterChange = (key, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: value,
-    }));
-  };
-
-  // Handle search
-  const handleSearch = (e) => {
-    const query = e.target.value;
+  // Search handling
+  const handleSearch = (query) => {
     setSearchQuery(query);
-    setFilters(prev => ({
-      ...prev,
-      searchQuery: query,
-    }));
+    setFilters(prev => ({ ...prev, searchQuery: query }));
   };
 
-  // Clear all filters
-  const clearAllFilters = () => {
+  // Filter handling
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const clearFilters = () => {
     setFilters({
       relationshipType: '',
       connectionLevel: '',
@@ -173,22 +156,13 @@ export const CardManagement = () => {
     setSearchQuery('');
   };
 
-  // Load more cards (pagination)
-  const loadMoreCards = () => {
-    setPagination(prev => ({
-      ...prev,
-      offset: prev.offset + prev.limit,
-    }));
-    loadCards(false);
-  };
-
-  // Handle card selection
-  const toggleCardSelection = (cardId) => {
-    setSelectedCards(prev =>
-      prev.includes(cardId)
-        ? prev.filter(id => id !== cardId)
-        : [...prev, cardId],
-    );
+  // Card selection
+  const toggleCardSelection = (cardId, isSelected) => {
+    if (isSelected) {
+      setSelectedCards(prev => [...prev, cardId]);
+    } else {
+      setSelectedCards(prev => prev.filter(id => id !== cardId));
+    }
   };
 
   const selectAllCards = () => {
@@ -197,6 +171,63 @@ export const CardManagement = () => {
 
   const clearSelection = () => {
     setSelectedCards([]);
+  };
+
+  // Card actions
+  const handleViewCard = (card) => {
+    setEditingCard(card);
+    // Could open a modal or navigate to detail view
+  };
+
+  const handleEditCard = (card) => {
+    setEditingCard(card);
+    // Navigate to edit form or open modal
+  };
+
+  const handleDeleteCard = async (card) => {
+    if (!confirm(`Are you sure you want to delete this card?`)) {
+      return;
+    }
+
+    try {
+      await adminService.deleteCard(card.id);
+      toast.success('Card deleted successfully');
+      loadCards(true);
+    } catch (err) {
+      console.error('Delete failed:', err);
+      toast.error('Failed to delete card');
+    }
+  };
+
+  const handleDuplicateCard = async (card) => {
+    try {
+      const duplicatedCard = {
+        ...card,
+        content: `${card.content} (Copy)`,
+        status: 'draft',
+      };
+      delete duplicatedCard.id;
+      delete duplicatedCard.createdAt;
+      delete duplicatedCard.updatedAt;
+
+      await adminService.createCard(duplicatedCard);
+      toast.success('Card duplicated successfully');
+      loadCards(true);
+    } catch (err) {
+      console.error('Duplication failed:', err);
+      toast.error('Failed to duplicate card');
+    }
+  };
+
+  const handleArchiveCard = async (card) => {
+    try {
+      await adminService.updateCard(card.id, { status: 'archived' });
+      toast.success('Card archived successfully');
+      loadCards(true);
+    } catch (err) {
+      console.error('Archive failed:', err);
+      toast.error('Failed to archive card');
+    }
   };
 
   // Bulk actions
@@ -208,7 +239,6 @@ export const CardManagement = () => {
     }
 
     try {
-      // Note: You might need to implement a bulk delete endpoint
       for (const cardId of selectedCards) {
         await adminService.deleteCard(cardId);
       }
@@ -225,45 +255,6 @@ export const CardManagement = () => {
   // Calculate active filter count
   const activeFilterCount = Object.values(filters).filter(value => value && value !== '' && value !== 'en').length;
 
-  // Format card content preview
-  const formatCardPreview = (content) => {
-    if (typeof content === 'string') return content;
-    if (content?.en) return content.en;
-    if (content && typeof content === 'object') {
-      const firstKey = Object.keys(content)[0];
-      return content[firstKey];
-    }
-    return 'No content available';
-  };
-
-  // Get status badge color
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800';
-      case 'review':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'archived':
-        return 'bg-gray-100 text-gray-800';
-      case 'draft':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  // Get tier badge color
-  const getTierColor = (tier) => {
-    switch (tier) {
-      case 'FREE':
-        return 'bg-green-100 text-green-800';
-      case 'PREMIUM':
-        return 'bg-purple-100 text-purple-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -279,202 +270,170 @@ export const CardManagement = () => {
           <Button
             variant="outline"
             leftIcon={<Upload className="h-4 w-4" />}
-            onClick={() => toast.info('Bulk import feature coming soon')}
           >
-            Bulk Import
+            Import
+          </Button>
+          <Button
+            variant="outline"
+            leftIcon={<Download className="h-4 w-4" />}
+          >
+            Export
           </Button>
           <Button
             leftIcon={<Plus className="h-4 w-4" />}
-            onClick={() => toast.info('Create card feature coming soon')}
           >
             Create Card
           </Button>
         </div>
       </div>
 
-      {/* Search and Filters */}
-      <div className="card p-6">
-        <div className="space-y-4">
-          {/* Search Bar */}
-          <div className="flex gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+      {/* Filters and Search */}
+      <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          {/* Search */}
+          <div className="flex-1 max-w-md">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search cards by content, type, or relationship..."
+                placeholder="Search cards..."
                 value={searchQuery}
-                onChange={handleSearch}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                onChange={(e) => handleSearch(e.target.value)}
+                className="pl-10 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
+              {searchQuery && (
+                <button
+                  onClick={() => handleSearch('')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                >
+                  <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                </button>
+              )}
             </div>
-            <Button
-              variant="outline"
-              leftIcon={<Filter className="h-4 w-4" />}
-              onClick={() => setShowFilters(!showFilters)}
-              className={activeFilterCount > 0 ? 'ring-2 ring-primary-500' : ''}
-            >
-              Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
-            </Button>
-            {activeFilterCount > 0 && (
-              <Button
-                variant="ghost"
-                leftIcon={<X className="h-4 w-4" />}
-                onClick={clearAllFilters}
-              >
-                Clear
-              </Button>
-            )}
           </div>
 
-          {/* Filter Panel */}
-          {showFilters && (
-            <div className="border-t border-gray-200 pt-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Relationship Type Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Relationship Type
-                  </label>
-                  <select
-                    value={filters.relationshipType}
-                    onChange={(e) => handleFilterChange('relationshipType', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  >
-                    <option value="">All Types</option>
-                    {CARD_RELATIONSHIP_TYPES.map(type => (
-                      <option key={type.value} value={type.value}>
-                        {type.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Connection Level Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Connection Level
-                  </label>
-                  <select
-                    value={filters.connectionLevel}
-                    onChange={(e) => handleFilterChange('connectionLevel', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  >
-                    <option value="">All Levels</option>
-                    {CARD_CONNECTION_LEVELS.map(level => (
-                      <option key={level.value} value={level.value}>
-                        Level {level.value} - {level.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Card Type Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Card Type
-                  </label>
-                  <select
-                    value={filters.type}
-                    onChange={(e) => handleFilterChange('type', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  >
-                    <option value="">All Types</option>
-                    {CARD_TYPES.map(type => (
-                      <option key={type.value} value={type.value}>
-                        {type.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Status Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Status
-                  </label>
-                  <select
-                    value={filters.status}
-                    onChange={(e) => handleFilterChange('status', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  >
-                    <option value="">All Statuses</option>
-                    {CARD_STATUSES.map(status => (
-                      <option key={status.value} value={status.value}>
-                        {status.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Tier Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Tier
-                  </label>
-                  <select
-                    value={filters.tier}
-                    onChange={(e) => handleFilterChange('tier', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  >
-                    <option value="">All Tiers</option>
-                    {CARD_TIERS.map(tier => (
-                      <option key={tier.value} value={tier.value}>
-                        {tier.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Deck Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Deck
-                  </label>
-                  <select
-                    value={filters.deckId}
-                    onChange={(e) => handleFilterChange('deckId', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  >
-                    <option value="">All Decks</option>
-                    {availableDecks.map(deck => (
-                      <option key={deck.id} value={deck.id}>
-                        {typeof deck.name === 'string' ? deck.name : deck.name?.en || 'Unnamed Deck'}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Language Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Language
-                  </label>
-                  <select
-                    value={filters.language}
-                    onChange={(e) => handleFilterChange('language', e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  >
-                    <option value="en">English</option>
-                    <option value="es">Spanish</option>
-                    <option value="fr">French</option>
-                    <option value="de">German</option>
-                  </select>
-                </div>
-              </div>
+          {/* View Mode and Filters */}
+          <div className="flex items-center space-x-2">
+            {/* View Mode Toggle */}
+            <div className="flex items-center rounded-md border border-gray-300 p-1">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-1 rounded ${viewMode === 'grid' ? 'bg-primary-100 text-primary-600' : 'text-gray-400'}`}
+              >
+                <Grid3X3 className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-1 rounded ${viewMode === 'list' ? 'bg-primary-100 text-primary-600' : 'text-gray-400'}`}
+              >
+                <List className="h-4 w-4" />
+              </button>
             </div>
-          )}
+
+            {/* Filters Toggle */}
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<Filter className="h-4 w-4" />}
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              Filters
+              {activeFilterCount > 0 && (
+                <span
+                  className="ml-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-primary-600 rounded-full">
+                  {activeFilterCount}
+                </span>
+              )}
+            </Button>
+
+            {/* Refresh */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => loadCards(true)}
+              disabled={loading}
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
         </div>
+
+        {/* Expanded Filters */}
+        {showFilters && (
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <select
+                value={filters.relationshipType}
+                onChange={(e) => handleFilterChange('relationshipType', e.target.value)}
+                className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+              >
+                <option value="">All Relationship Types</option>
+                {CARD_RELATIONSHIP_TYPES.map((it) => (
+                  <option key={it.value} value={it.value}>{it.label}</option>
+                ))}
+              </select>
+
+              <select
+                value={filters.connectionLevel}
+                onChange={(e) => handleFilterChange('connectionLevel', e.target.value)}
+                className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+              >
+                <option value="">All Connection Levels</option>
+                {CARD_CONNECTION_LEVELS.map((it) => (
+                  <option key={it.value} value={it.value}>Level {it.value} - {it.label}</option>
+                ))}
+              </select>
+
+              <select
+                value={filters.type}
+                onChange={(e) => handleFilterChange('type', e.target.value)}
+                className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+              >
+                <option value="">All Card Types</option>
+                {CARD_TYPES.map((it) => (
+                  <option key={it.value} value={it.value}>{it.label}</option>
+                ))}
+              </select>
+
+              <select
+                value={filters.status}
+                onChange={(e) => handleFilterChange('status', e.target.value)}
+                className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+              >
+                <option value="">All Statuses</option>
+                {CARD_STATUSES.map((it) => (
+                  <option key={it.value} value={it.value}>{it.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="mt-4 flex justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearFilters}
+              >
+                Clear Filters
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Bulk Actions */}
       {selectedCards.length > 0 && (
-        <div className="card p-4">
+        <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <span className="text-sm font-medium text-gray-700">
-                {selectedCards.length} card{selectedCards.length !== 1 ? 's' : ''} selected
+              <span className="text-sm font-medium text-primary-700">
+                {selectedCards.length} cards selected
               </span>
-              <Button variant="ghost" size="sm" onClick={clearSelection}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearSelection}
+                leftIcon={<X className="h-4 w-4" />}
+              >
                 Clear Selection
               </Button>
             </div>
@@ -482,251 +441,94 @@ export const CardManagement = () => {
               <Button
                 variant="outline"
                 size="sm"
-                leftIcon={<Download className="h-4 w-4" />}
-                onClick={() => toast.info('Export feature coming soon')}
-              >
-                Export
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<Edit className="h-4 w-4" />}
-                onClick={() => toast.info('Bulk edit feature coming soon')}
-              >
-                Bulk Edit
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<Trash2 className="h-4 w-4" />}
                 onClick={handleBulkDelete}
-                className="text-red-600 hover:text-red-700"
+                leftIcon={<Trash2 className="h-4 w-4" />}
               >
-                Delete
+                Delete Selected
               </Button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Cards Grid */}
-      <div className="space-y-4">
-        {/* Loading State */}
-        {loading && cards.length === 0 && (
-          <div className="card p-12 text-center">
-            <RefreshCw className="h-8 w-8 animate-spin mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-600">Loading cards...</p>
+      {/* Cards Grid/List */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-600">{error}</p>
+        </div>
+      )}
+
+      {loading && cards.length === 0 ? (
+        <div className="text-center py-12">
+          <RefreshCw className="h-8 w-8 animate-spin mx-auto text-gray-400 mb-4" />
+          <p className="text-gray-600">Loading cards...</p>
+        </div>
+      ) : cards.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-gray-600">No cards found matching your criteria.</p>
+        </div>
+      ) : (
+        <div className={`
+          ${viewMode === 'grid'
+          ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
+          : 'space-y-4'
+        }
+        `}>
+          {cards.map((card) => (
+            <AdminCard
+              key={card.id}
+              card={card}
+              isSelected={selectedCards.includes(card.id)}
+              onSelect={toggleCardSelection}
+              onView={handleViewCard}
+              onEdit={handleEditCard}
+              onDelete={handleDeleteCard}
+              onDuplicate={handleDuplicateCard}
+              onArchive={handleArchiveCard}
+              showSelection={true}
+              showActions={true}
+              variant={viewMode === 'list' ? 'compact' : 'default'}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Load More */}
+      {pagination.hasMore && !loading && (
+        <div className="text-center">
+          <Button
+            variant="outline"
+            onClick={() => loadCards(false)}
+            leftIcon={<ChevronRight className="h-4 w-4" />}
+          >
+            Load More Cards
+          </Button>
+        </div>
+      )}
+
+      {/* Selection Controls */}
+      {cards.length > 0 && (
+        <div className="flex justify-between items-center text-sm text-gray-600">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={selectedCards.length === cards.length ? clearSelection : selectAllCards}
+              className="flex items-center space-x-2 hover:text-gray-900"
+            >
+              {selectedCards.length === cards.length ? (
+                <CheckSquare className="h-4 w-4" />
+              ) : (
+                <Square className="h-4 w-4" />
+              )}
+              <span>
+                {selectedCards.length === cards.length ? 'Deselect All' : 'Select All'}
+              </span>
+            </button>
           </div>
-        )}
-
-        {/* Error State */}
-        {error && (
-          <div className="card p-6 border-red-200 bg-red-50">
-            <div className="flex items-center space-x-3">
-              <div className="text-red-400">
-                <X className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-red-800 font-medium">Error loading cards</p>
-                <p className="text-red-600 text-sm">{error}</p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => loadCards(true)}
-                leftIcon={<RefreshCw className="h-4 w-4" />}
-              >
-                Retry
-              </Button>
-            </div>
+          <div>
+            Showing {cards.length} of {pagination.total} cards
           </div>
-        )}
-
-        {/* Empty State */}
-        {!loading && !error && cards.length === 0 && (
-          <div className="card p-12 text-center">
-            <div className="text-gray-400 mb-4">
-              <Tag className="h-12 w-12 mx-auto" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No cards found</h3>
-            <p className="text-gray-600 mb-4">
-              {activeFilterCount > 0
-                ? 'Try adjusting your filters to see more results.'
-                : 'Get started by creating your first card.'
-              }
-            </p>
-            {activeFilterCount > 0 ? (
-              <Button variant="outline" onClick={clearAllFilters}>
-                Clear Filters
-              </Button>
-            ) : (
-              <Button leftIcon={<Plus className="h-4 w-4" />}>
-                Create First Card
-              </Button>
-            )}
-          </div>
-        )}
-
-        {/* Cards List */}
-        {cards.length > 0 && (
-          <>
-            {/* Header with select all */}
-            <div className="flex items-center justify-between bg-gray-50 px-4 py-2 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <input
-                  type="checkbox"
-                  checked={selectedCards.length === cards.length && cards.length > 0}
-                  onChange={(e) => e.target.checked ? selectAllCards() : clearSelection()}
-                  className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                />
-                <span className="text-sm font-medium text-gray-700">
-                  Select All ({cards.length})
-                </span>
-              </div>
-              <div className="text-sm text-gray-600">
-                Showing {pagination.offset + 1} - {Math.min(pagination.offset + cards.length, pagination.total)} of {pagination.total}
-              </div>
-            </div>
-
-            {/* Cards */}
-            <div className="grid gap-4">
-              {cards.map((card) => (
-                <div
-                  key={card.id}
-                  className={`card p-6 transition-all duration-200 ${
-                    selectedCards.includes(card.id)
-                      ? 'ring-2 ring-primary-500 bg-primary-50'
-                      : 'hover:shadow-md'
-                  }`}
-                >
-                  <div className="flex items-start space-x-4">
-                    {/* Selection Checkbox */}
-                    <input
-                      type="checkbox"
-                      checked={selectedCards.includes(card.id)}
-                      onChange={() => toggleCardSelection(card.id)}
-                      className="mt-1 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                    />
-
-                    {/* Card Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          {/* Card Title/Content Preview */}
-                          <h3 className="text-lg font-medium text-gray-900 mb-2 line-clamp-2">
-                            {formatCardPreview(card.content).substring(0, 100)}
-                            {formatCardPreview(card.content).length > 100 && '...'}
-                          </h3>
-
-                          {/* Badges */}
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(card.status)}`}>
-                              {card.status || 'active'}
-                            </span>
-                            <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTierColor(card.tier)}`}>
-                              {card.tier || 'FREE'}
-                            </span>
-                            <span
-                              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              {CARD_TYPES.find(t => t.value === card.type)?.label || card.type}
-                            </span>
-                            <span
-                              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                              Level {card.connectionLevel}
-                            </span>
-                            {card.relationshipTypes && card.relationshipTypes.length > 0 && (
-                              <span
-                                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                {CARD_RELATIONSHIP_TYPES.find(r => r.value === card.relationshipTypes[0])?.label || card.relationshipTypes[0]}
-                                {card.relationshipTypes.length > 1 && ` +${card.relationshipTypes.length - 1}`}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Metadata */}
-                          <div className="flex items-center space-x-4 text-sm text-gray-500">
-                            {card.createdBy && (
-                              <div className="flex items-center space-x-1">
-                                <User className="h-4 w-4" />
-                                <span>{card.createdBy}</span>
-                              </div>
-                            )}
-                            {card.createdAt && card.createdAt._seconds && (
-                              <div className="flex items-center space-x-1">
-                                <Clock className="h-4 w-4" />
-                                <span>{new Date(card.createdAt._seconds * 1000).toLocaleDateString('en-US', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric',
-                                })}</span>
-                              </div>
-                            )}
-                            {card.theta && (
-                              <div className="flex items-center space-x-1">
-                                <span className="text-xs">θ {card.theta}</span>
-                              </div>
-                            )}
-                            {card.languages && card.languages.length > 1 && (
-                              <div className="flex items-center space-x-1">
-                                <Globe className="h-4 w-4" />
-                                <span>{card.languages.length} languages</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex items-center space-x-2 ml-4">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            leftIcon={<Eye className="h-4 w-4" />}
-                            onClick={() => toast.info(`View card ${card.id}`)}
-                          >
-                            View
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            leftIcon={<Edit className="h-4 w-4" />}
-                            onClick={() => toast.info(`Edit card ${card.id}`)}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            leftIcon={<MoreVertical className="h-4 w-4" />}
-                            onClick={() => toast.info(`More options for card ${card.id}`)}
-                          >
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Load More Button */}
-            {pagination.hasMore && (
-              <div className="text-center py-6">
-                <Button
-                  variant="outline"
-                  onClick={loadMoreCards}
-                  disabled={loading}
-                  leftIcon={loading ? <RefreshCw className="h-4 w-4 animate-spin" /> :
-                    <ChevronRight className="h-4 w-4" />}
-                >
-                  {loading ? 'Loading...' : 'Load More Cards'}
-                </Button>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
