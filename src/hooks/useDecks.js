@@ -1,5 +1,4 @@
-import { useSelector, useDispatch } from 'react-redux';
-import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { deckSelectors } from '@store/deck/deckSelectors';
 import { deckActions } from '@store/deck/deckSlice';
 
@@ -34,7 +33,7 @@ export const useDecks = () => {
         deckId,
         transactionId,
         paymentMethod,
-      })
+      }),
     );
   };
 

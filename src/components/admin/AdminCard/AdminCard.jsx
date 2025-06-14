@@ -89,7 +89,7 @@ const AdminCard = ({
   };
 
   const cardContent = formatCardContent(card.content);
-  const CUTTING_LENGTH = 240;
+  const CUTTING_LENGTH = 260;
   const isLongContent = isVariantDefault && cardContent.length > CUTTING_LENGTH;
   const displayContent = isExpanded || !isVariantDefault ? cardContent : cardContent.substring(0, CUTTING_LENGTH);
 

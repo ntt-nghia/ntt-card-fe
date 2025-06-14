@@ -86,7 +86,7 @@ const ChoiceChips = ({
       'rounded-full border-2 font-medium',
       'transition-all duration-200 cursor-pointer',
       'focus:outline-none focus:ring-2 focus:ring-offset-1',
-      'touch-manipulation min-h-[44px] sm:min-h-auto', // Mobile touch target
+      'touch-manipulation sm:min-h-auto', // Mobile touch target
       sizeClasses[size]
     );
 
@@ -195,18 +195,18 @@ const ChoiceChips = ({
         </div>
       )}
 
-      {/* Selection status */}
-      {multiple && Array.isArray(value) && value.length > 0 ? (
-        <div className="mt-2 text-xs text-gray-600">
-          Selected: {value.length} item{value.length !== 1 ? 's' : ''}
-        </div>
-      ) : (
-        !multiple && !hasSelection && !required && (
-          <div className="mt-2 text-xs text-gray-500">
-            No selection {allowDeselect ? '(click to deselect)' : ''}
-          </div>
-        )
-      )}
+      {/*/!* Selection status *!/*/}
+      {/*{multiple && Array.isArray(value) && value.length > 0 ? (*/}
+      {/*  <div className="mt-2 text-xs text-gray-600">*/}
+      {/*    Selected: {value.length} item{value.length !== 1 ? 's' : ''}*/}
+      {/*  </div>*/}
+      {/*) : (*/}
+      {/*  !multiple && !hasSelection && !required && (*/}
+      {/*    <div className="mt-2 text-xs text-gray-500">*/}
+      {/*      No selection {allowDeselect ? '(click to deselect)' : ''}*/}
+      {/*    </div>*/}
+      {/*  )*/}
+      {/*)}*/}
     </div>
   );
 };
