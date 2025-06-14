@@ -15,10 +15,10 @@ export const CARD_RELATIONSHIP_TYPES = [
 ];
 
 export const CARD_CONNECTION_LEVELS = [
-  { value: 1, label: 'Surface' },
-  { value: 2, label: 'Personal' },
-  { value: 3, label: 'Vulnerable' },
-  { value: 4, label: 'Deep' },
+  { value: 1, label: 'Level 1: Surface' },
+  { value: 2, label: 'Level 2: Personal' },
+  { value: 3, label: 'Level 3: Vulnerable' },
+  { value: 4, label: 'Level 4: Deep' },
 ];
 
 export const CARD_TYPES = [

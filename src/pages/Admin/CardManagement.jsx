@@ -19,6 +19,7 @@ import Button from '@components/common/Button/index.js';
 import AdminCard from '@components/admin/AdminCard';
 import adminService from '@services/admin.js';
 import { CARD_CONNECTION_LEVELS, CARD_RELATIONSHIP_TYPES, CARD_STATUSES, CARD_TYPES } from '@utils/constants.js';
+import { ChoiceChips } from '@components/common/ChoiceChips/index.js';
 
 const toast = {
   success: (message) => console.log('SUCCESS:', message),
@@ -362,49 +363,39 @@ export const CardManagement = () => {
         {showFilters && (
           <div className="mt-4 pt-4 border-t border-gray-200">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <select
+
+              <ChoiceChips
+                label="Relationship Type"
+                options={CARD_RELATIONSHIP_TYPES}
                 value={filters.relationshipType}
-                onChange={(e) => handleFilterChange('relationshipType', e.target.value)}
-                className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-              >
-                <option value="">All Relationship Types</option>
-                {CARD_RELATIONSHIP_TYPES.map((it) => (
-                  <option key={it.value} value={it.value}>{it.label}</option>
-                ))}
-              </select>
+                onChange={(val) => handleFilterChange('relationshipType', val)}
+                emptyValue=""
+              />
 
-              <select
+              <ChoiceChips
+                label="Connection Levels"
+                options={CARD_CONNECTION_LEVELS}
                 value={filters.connectionLevel}
-                onChange={(e) => handleFilterChange('connectionLevel', e.target.value)}
-                className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-              >
-                <option value="">All Connection Levels</option>
-                {CARD_CONNECTION_LEVELS.map((it) => (
-                  <option key={it.value} value={it.value}>Level {it.value} - {it.label}</option>
-                ))}
-              </select>
+                onChange={(val) => handleFilterChange('connectionLevel', val)}
+                emptyValue=""
+              />
 
-              <select
+              <ChoiceChips
+                label="Card Types"
+                options={CARD_TYPES}
                 value={filters.type}
-                onChange={(e) => handleFilterChange('type', e.target.value)}
-                className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-              >
-                <option value="">All Card Types</option>
-                {CARD_TYPES.map((it) => (
-                  <option key={it.value} value={it.value}>{it.label}</option>
-                ))}
-              </select>
+                onChange={(val) => handleFilterChange('type', val)}
+                emptyValue=""
+              />
 
-              <select
+              <ChoiceChips
+                label="Statuses"
+                options={CARD_STATUSES}
                 value={filters.status}
-                onChange={(e) => handleFilterChange('status', e.target.value)}
-                className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-              >
-                <option value="">All Statuses</option>
-                {CARD_STATUSES.map((it) => (
-                  <option key={it.value} value={it.value}>{it.label}</option>
-                ))}
-              </select>
+                onChange={(val) => handleFilterChange('status', val)}
+                emptyValue=""
+              />
+
             </div>
 
             <div className="mt-4 flex justify-end">
