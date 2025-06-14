@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { BarChart3, CreditCard, Database, TrendingUp, Users } from 'lucide-react';
+import { BarChart3, CreditCard, Database, TrendingUp, Users, Wand2 } from 'lucide-react';
 import { useAuth } from '@hooks/useAuth';
 import { Layout } from '@components/common/Layout';
 import { AdminDashboard } from '@pages/Admin/AdminDashboard.jsx';
@@ -9,6 +9,7 @@ import { DeckManagement } from '@pages/Admin/DeckManagement.jsx';
 import { CardManagement } from '@pages/Admin/CardManagement.jsx';
 import { Analytics } from '@pages/Admin/Analytics.jsx';
 import { UserManagement } from '@pages/Admin/UserManagement.jsx';
+import CardGenerator from '@pages/Admin/CardGenerator.jsx';
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ const Admin = () => {
     { path: '/admin', label: 'Dashboard', icon: <BarChart3 className="h-4 w-4" /> },
     { path: '/admin/decks', label: 'Decks', icon: <CreditCard className="h-4 w-4" /> },
     { path: '/admin/cards', label: 'Cards', icon: <Database className="h-4 w-4" /> },
+    { path: '/admin/generate', label: 'AI Generator', icon: <Wand2 className="h-4 w-4" /> }, // NEW
     { path: '/admin/analytics', label: 'Analytics', icon: <TrendingUp className="h-4 w-4" /> },
     { path: '/admin/users', label: 'Users', icon: <Users className="h-4 w-4" /> },
   ];
@@ -68,6 +70,7 @@ const Admin = () => {
               <Route path="/" element={<AdminDashboard />} />
               <Route path="/decks" element={<DeckManagement />} />
               <Route path="/cards" element={<CardManagement />} />
+              <Route path="generate" element={<CardGenerator />} /> {/* NEW */}
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/users" element={<UserManagement />} />
               <Route path="*" element={<Navigate to="/admin" replace />} />

@@ -106,7 +106,7 @@ api.interceptors.request.use(
 
       if (remainingTime > 0) {
         const error = new Error(
-          `Rate limited. Try again in ${Math.ceil(remainingTime / 1000)} seconds.`
+          `Rate limited. Try again in ${Math.ceil(remainingTime / 1000)} seconds.`,
         );
         error.code = 'RATE_LIMITED';
         error.remainingTime = remainingTime;
@@ -121,14 +121,14 @@ api.interceptors.request.use(
     }
 
     console.debug(
-      `[API Request ${config.metadata.requestId}] ${config.method?.toUpperCase()} ${config.url}`
+      `[API Request ${config.metadata.requestId}] ${config.method?.toUpperCase()} ${config.url}`,
     );
     return config;
   },
   (error) => {
     console.error('[API Request Error]', error);
     return Promise.reject(error);
-  }
+  },
 );
 
 // Enhanced response interceptor
@@ -136,7 +136,7 @@ api.interceptors.response.use(
   (response) => {
     const duration = Date.now() - response.config.metadata.startTime;
     console.debug(
-      `[API Response ${response.config.metadata.requestId}] ${response.status} (${duration}ms)`
+      `[API Response ${response.config.metadata.requestId}] ${response.status} (${duration}ms)`,
     );
     return response;
   },
@@ -209,7 +209,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 // Enhanced retry logic with exponential backoff and limits
@@ -238,7 +238,7 @@ const handleRetryWithBackoff = async (error) => {
   const cappedDelay = Math.min(delay, 15000); // Cap at 15 seconds
 
   console.warn(
-    `[API Retry ${config.metadata?.requestId}] Attempt ${config.__retryCount}/${MAX_RETRIES} in ${Math.round(cappedDelay)}ms for ${config.url}`
+    `[API Retry ${config.metadata?.requestId}] Attempt ${config.__retryCount}/${MAX_RETRIES} in ${Math.round(cappedDelay)}ms for ${config.url}`,
   );
 
   // Wait before retrying
@@ -262,7 +262,7 @@ export const apiMethods = {
     } catch (error) {
       if (error.code === 'RATE_LIMITED') {
         throw new Error(
-          `Service temporarily unavailable. Please try again in ${Math.ceil(error.remainingTime / 1000)} seconds.`
+          `Service temporarily unavailable. Please try again in ${Math.ceil(error.remainingTime / 1000)} seconds.`,
         );
       }
       throw handleApiError(error);
@@ -275,7 +275,7 @@ export const apiMethods = {
     } catch (error) {
       if (error.code === 'RATE_LIMITED') {
         throw new Error(
-          `Service temporarily unavailable. Please try again in ${Math.ceil(error.remainingTime / 1000)} seconds.`
+          `Service temporarily unavailable. Please try again in ${Math.ceil(error.remainingTime / 1000)} seconds.`,
         );
       }
       throw handleApiError(error);
@@ -288,7 +288,7 @@ export const apiMethods = {
     } catch (error) {
       if (error.code === 'RATE_LIMITED') {
         throw new Error(
-          `Service temporarily unavailable. Please try again in ${Math.ceil(error.remainingTime / 1000)} seconds.`
+          `Service temporarily unavailable. Please try again in ${Math.ceil(error.remainingTime / 1000)} seconds.`,
         );
       }
       throw handleApiError(error);
@@ -301,40 +301,12 @@ export const apiMethods = {
     } catch (error) {
       if (error.code === 'RATE_LIMITED') {
         throw new Error(
-          `Service temporarily unavailable. Please try again in ${Math.ceil(error.remainingTime / 1000)} seconds.`
+          `Service temporarily unavailable. Please try again in ${Math.ceil(error.remainingTime / 1000)} seconds.`,
         );
       }
       throw handleApiError(error);
     }
   },
-};
-
-// Export rate limit status for debugging
-export const getRateLimitStatus = () => {
-  return {
-    rateLimitedEndpoints: Array.from(rateLimitProtection.rateLimitedEndpoints.keys()),
-    requestCounts: Object.fromEntries(rateLimitProtection.requestCounts),
-    resetTimes: Object.fromEntries(
-      Array.from(rateLimitProtection.resetTimes.entries()).map(([url, time]) => [
-        url,
-        new Date(time).toISOString(),
-      ])
-    ),
-  };
-};
-
-// Manual rate limit reset (for admin/debug)
-export const resetRateLimit = (url = null) => {
-  if (url) {
-    rateLimitProtection.rateLimitedEndpoints.delete(url);
-    rateLimitProtection.requestCounts.delete(url);
-    rateLimitProtection.resetTimes.delete(url);
-  } else {
-    rateLimitProtection.rateLimitedEndpoints.clear();
-    rateLimitProtection.requestCounts.clear();
-    rateLimitProtection.resetTimes.clear();
-  }
-  console.log('Rate limit protection reset');
 };
 
 // Helper functions
@@ -396,6 +368,11 @@ export const ENDPOINTS = {
     CARDS: '/v1/admin/cards',
     CARDS_BULK: '/v1/admin/cards/bulk',
     CARDS_GENERATE: '/v1/admin/cards/generate',
+    BATCH_GENERATE: '/v1/admin/batch-generate-cards', // NEW
+    GENERATION_ANALYTICS: '/v1/admin/generation-analytics', // NEW
+    APPROVE_CARDS: '/v1/admin/approve-cards', // NEW
+    PENDING_REVIEW: '/v1/admin/pending-review-cards', // NEW
+    REGENERATE_CARDS: '/v1/admin/regenerate-cards', // NEW
     ANALYTICS: '/v1/admin/analytics',
     DECK_ANALYTICS: (id) => `/v1/admin/analytics/decks/${id}`,
   },
