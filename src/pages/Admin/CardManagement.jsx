@@ -4,7 +4,8 @@ import {
   ChevronRight,
   Download,
   Filter,
-  Grid3X3,
+  LayoutDashboard,
+  LayoutGrid,
   List,
   Plus,
   RefreshCw,
@@ -40,11 +41,12 @@ export const CardManagement = () => {
     setFilters,
     clearError,
   } = useAdmin();
-// Local UI state
+
+  // Local UI state
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCards, setSelectedCards] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [viewMode, setViewMode] = useState('grid'); // 'grid', 'list', or 'masonry'
 
   // Load initial data
   useEffect(() => {
@@ -69,6 +71,30 @@ export const CardManagement = () => {
       sortOrder: 'desc',
     });
   }, [getAllCards]);
+
+  // Masonry layout helper function
+  const distributeMasonryCards = (cards, columnCount) => {
+    const columns = Array.from({ length: columnCount }, () => []);
+
+    cards.forEach((card, index) => {
+      const columnIndex = index % columnCount;
+      columns[columnIndex].push(card);
+    });
+
+    return columns;
+  };
+
+  // Get responsive column count for masonry
+  const getMasonryColumnCount = () => {
+    if (typeof window !== 'undefined') {
+      const width = window.innerWidth;
+      if (width >= 1280) return 4; // xl
+      if (width >= 1024) return 3; // lg
+      if (width >= 768) return 2;  // md
+      return 2; // sm and below
+    }
+    return 3; // default fallback
+  };
 
   // Search handling
   const handleSearch = (query) => {
@@ -196,6 +222,66 @@ export const CardManagement = () => {
     value => value && value !== '' && value !== 'en',
   ).length;
 
+  // Render cards based on view mode
+  const renderCards = () => {
+    if (viewMode === 'masonry') {
+      const columnCount = getMasonryColumnCount();
+      const columns = distributeMasonryCards(cards, columnCount);
+
+      return (
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+          {columns.map((columnCards, columnIndex) => (
+            <div key={columnIndex} className="flex flex-col gap-4">
+              {columnCards.map((card) => (
+                <AdminCard
+                  key={card.id}
+                  card={card}
+                  isSelected={selectedCards.includes(card.id)}
+                  onSelect={toggleCardSelection}
+                  onEdit={(card) => {
+                    console.log('Edit card:', card.id);
+                  }}
+                  onDelete={handleDeleteCard}
+                  onDuplicate={handleDuplicateCard}
+                  onArchive={handleArchiveCard}
+                  showSelection={true}
+                  showActions={true}
+                  variant="masonry"
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    const containerClasses = viewMode === 'grid'
+      ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
+      : 'space-y-4';
+
+    return (
+      <div className={containerClasses}>
+        {cards.map((card) => (
+          <AdminCard
+            key={card.id}
+            card={card}
+            isSelected={selectedCards.includes(card.id)}
+            onSelect={toggleCardSelection}
+            onEdit={(card) => {
+              console.log('Edit card:', card.id);
+            }}
+            onDelete={handleDeleteCard}
+            onDuplicate={handleDuplicateCard}
+            onArchive={handleArchiveCard}
+            showSelection={true}
+            showActions={true}
+            variant={viewMode === 'list' ? 'compact' : 'default'}
+          />
+        ))}
+      </div>
+    );
+  };
+
   if (error) {
     return (
       <div className="text-center py-12">
@@ -275,25 +361,38 @@ export const CardManagement = () => {
 
           {/* View Mode and Filters */}
           <div className="flex items-center space-x-2">
-            {/* View Mode Toggle */}
+            {/* View Mode Toggle - Updated to include masonry */}
             <div className="flex items-center rounded-md border border-gray-300 p-1">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-1 rounded ${
+                className={`p-2 rounded transition-colors ${
                   viewMode === 'grid'
                     ? 'bg-primary-100 text-primary-600'
-                    : 'text-gray-400'
+                    : 'text-gray-400 hover:text-gray-600'
                 }`}
+                title="Grid View"
               >
-                <Grid3X3 className="h-4 w-4" />
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('masonry')}
+                className={`p-2 rounded transition-colors ${
+                  viewMode === 'masonry'
+                    ? 'bg-primary-100 text-primary-600'
+                    : 'text-gray-400 hover:text-gray-600'
+                }`}
+                title="Masonry View"
+              >
+                <LayoutDashboard className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-1 rounded ${
+                className={`p-2 rounded transition-colors ${
                   viewMode === 'list'
                     ? 'bg-primary-100 text-primary-600'
-                    : 'text-gray-400'
+                    : 'text-gray-400 hover:text-gray-600'
                 }`}
+                title="List View"
               >
                 <List className="h-4 w-4" />
               </button>
@@ -419,7 +518,7 @@ export const CardManagement = () => {
         </div>
       )}
 
-      {/* Cards Grid/List */}
+      {/* Cards Grid/List/Masonry */}
       {isLoading && cards.length === 0 ? (
         <div className="text-center py-12">
           <Loading size="large" text="Loading cards..." />
@@ -429,31 +528,7 @@ export const CardManagement = () => {
           <p className="text-gray-600">No cards found matching your criteria.</p>
         </div>
       ) : (
-        <div className={`
-          ${viewMode === 'grid'
-          ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
-          : 'space-y-4'
-        }
-        `}>
-          {cards.map((card) => (
-            <AdminCard
-              key={card.id}
-              card={card}
-              isSelected={selectedCards.includes(card.id)}
-              onSelect={toggleCardSelection}
-              onEdit={(card) => {
-                // Navigate to edit or open modal
-                console.log('Edit card:', card.id);
-              }}
-              onDelete={handleDeleteCard}
-              onDuplicate={handleDuplicateCard}
-              onArchive={handleArchiveCard}
-              showSelection={true}
-              showActions={true}
-              variant={viewMode === 'list' ? 'compact' : 'default'}
-            />
-          ))}
-        </div>
+        renderCards()
       )}
 
       {/* Load More */}

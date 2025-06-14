@@ -27,13 +27,16 @@ const AdminCard = ({
                      onArchive = null,
                      showActions = true,
                      showSelection = false,
-                     variant = 'default', // 'default', 'compact'
+                     variant = 'default', // 'default', 'compact', 'masonry'
                      className = '',
                    }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
 
   const isVariantDefault = variant === 'default';
+  const isVariantMasonry = variant === 'masonry';
+  const isVariantCompact = variant === 'compact';
+
   // Format card content based on type
   const formatCardContent = (content) => {
     if (typeof content === 'string') return content;
@@ -89,9 +92,19 @@ const AdminCard = ({
   };
 
   const cardContent = formatCardContent(card.content);
-  const CUTTING_LENGTH = 260;
-  const isLongContent = isVariantDefault && cardContent.length > CUTTING_LENGTH;
-  const displayContent = isExpanded || !isVariantDefault ? cardContent : cardContent.substring(0, CUTTING_LENGTH);
+
+  // Content truncation logic based on variant
+  const getCuttingLength = () => {
+    if (isVariantCompact) return 120;
+    if (isVariantMasonry) return 0; // No truncation for masonry
+    return 260; // Default variant
+  };
+
+  const CUTTING_LENGTH = getCuttingLength();
+  const isLongContent = CUTTING_LENGTH > 0 && cardContent.length > CUTTING_LENGTH;
+  const displayContent = isExpanded || isVariantMasonry || !isLongContent
+    ? cardContent
+    : cardContent.substring(0, CUTTING_LENGTH);
 
   // Action buttons for dropdown
   const actionButtons = [
@@ -107,11 +120,34 @@ const AdminCard = ({
     ? getRelationshipTypeColor(card.relationshipTypes[0])
     : 'bg-white';
 
+  // Get card sizing classes based on variant
+  const getCardSizeClasses = () => {
+    if (isVariantCompact) return 'h-[12rem] w-full';
+    if (isVariantMasonry) return 'w-full min-h-[8rem]'; // Flexible height for masonry
+    return 'h-[20rem] max-w-sm mx-auto'; // Default variant
+  };
+
+  // Get content area classes based on variant
+  const getContentAreaClasses = () => {
+    if (isVariantMasonry) {
+      return 'p-4 flex flex-col'; // No height constraint for masonry
+    }
+    return 'p-4 h-full flex flex-col';
+  };
+
+  // Get main content classes based on variant
+  const getMainContentClasses = () => {
+    if (isVariantMasonry) {
+      return 'mb-3'; // No flex-1 for masonry to allow natural sizing
+    }
+    return 'flex-1 mb-3 overflow-hidden';
+  };
+
   return (
     <div className={`
       relative ${bgColor} rounded-lg border-2 transition-all duration-200 group
       ${isSelected ? 'border-primary-500 ring-2 ring-primary-200' : 'border-gray-200 hover:border-gray-300'}
-      ${variant === 'compact' ? 'h-[12rem] w-full' : 'h-[20rem] max-w-sm mx-auto'}
+      ${getCardSizeClasses()}
       ${className}
     `}>
 
@@ -155,7 +191,7 @@ const AdminCard = ({
       )}
 
       {/* Card Content */}
-      <div className="p-4 h-full flex flex-col">
+      <div className={getContentAreaClasses()}>
         {/* Header Badges */}
         <div className="flex flex-wrap gap-1 mb-3">
           <span className={`
@@ -189,14 +225,14 @@ const AdminCard = ({
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 mb-3 overflow-hidden">
+        <div className={getMainContentClasses()}>
           <div className="text-sm text-gray-900 leading-relaxed">
             {displayContent}
-            {isLongContent && !isExpanded && '...'}
+            {isLongContent && !isExpanded && !isVariantMasonry && '...'}
           </div>
 
-          {/* Expand/Collapse for long content */}
-          {isLongContent && (
+          {/* Expand/Collapse for long content (not shown in masonry) */}
+          {isLongContent && !isVariantMasonry && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
               className="mt-2 flex items-center text-xs text-primary-600 hover:text-primary-700 font-medium"
@@ -217,7 +253,7 @@ const AdminCard = ({
         </div>
 
         {/* Footer Metadata */}
-        <div className="mt-auto pt-2 border-t border-gray-100">
+        <div className={`${isVariantMasonry ? 'mt-3' : 'mt-auto'} pt-2 border-t border-gray-100`}>
           <div className="flex items-center justify-between text-xs text-gray-500">
             <div className="flex items-center space-x-3">
               {card.relationshipTypes && card.relationshipTypes.length > 0 && (
