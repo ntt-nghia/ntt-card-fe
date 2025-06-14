@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import adminService from '@services/admin.js';
 import Button from '@components/common/Button/index.js';
-import { CONNECTION_LEVELS, LANGUAGES, RELATIONSHIP_TYPES } from '@utils/constants.js';
+import { CARD_CONNECTION_LEVELS, LANGUAGES, RELATIONSHIP_TYPES } from '@utils/constants.js';
 
 const toast = {
   success: (message) => console.log('SUCCESS:', message),
@@ -295,9 +295,9 @@ const CardGenerator = () => {
                   onChange={(e) => handleInputChange('connectionLevel', parseInt(e.target.value))}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 >
-                  {Object.entries(CONNECTION_LEVELS).map(([key, value]) => (
-                    <option key={key} value={value}>
-                      Level {value} - {key.toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                  {CARD_CONNECTION_LEVELS.map(item => (
+                    <option key={item.label} value={item.value}>
+                      Level {item.value} - {item.label.toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
                     </option>
                   ))}
                 </select>

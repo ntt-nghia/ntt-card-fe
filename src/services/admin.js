@@ -216,6 +216,40 @@ class AdminService {
     return apiMethods.get(`${ENDPOINTS.ADMIN.DECK_ANALYTICS(deckId)}?${queryParams}`);
   }
 
+  // Cards
+
+
+  /**
+   * Get all cards for admin with pagination and filtering
+   * @param {Object} filters - Optional filters and pagination
+   * @returns {Promise} API response
+   */
+  async getAllCards(filters = {}) {
+    const queryParams = new URLSearchParams();
+
+    // Pagination parameters
+    if (filters.limit) queryParams.append('limit', filters.limit);
+    if (filters.offset) queryParams.append('offset', filters.offset);
+    if (filters.sortBy) queryParams.append('sortBy', filters.sortBy);
+    if (filters.sortOrder) queryParams.append('sortOrder', filters.sortOrder);
+
+    // Filter parameters
+    if (filters.relationshipType) queryParams.append('relationshipType', filters.relationshipType);
+    if (filters.connectionLevel) queryParams.append('connectionLevel', filters.connectionLevel);
+    if (filters.type) queryParams.append('type', filters.type);
+    if (filters.status) queryParams.append('status', filters.status);
+    if (filters.tier) queryParams.append('tier', filters.tier);
+    if (filters.deckId) queryParams.append('deckId', filters.deckId);
+    if (filters.language) queryParams.append('language', filters.language);
+    if (filters.searchQuery) queryParams.append('search', filters.searchQuery);
+
+    // If you have a dedicated GET route for admin cards
+    return apiMethods.get(`${ENDPOINTS.ADMIN.CARDS}?${queryParams}`);
+
+    // Alternative: If you need to adapt the existing pending review endpoint
+    // return apiMethods.get(`/v1/admin/pending-review-cards?${queryParams}`);
+  }
+
   // Utility Methods
 
   /**

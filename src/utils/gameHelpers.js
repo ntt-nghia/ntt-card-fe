@@ -1,4 +1,4 @@
-import { CONNECTION_LEVELS, CARD_TYPES, SESSION_STATUS } from './constants';
+import { CARD_CONNECTION_LEVELS, CARD_TYPES, SESSION_STATUS } from './constants';
 
 /**
  * Calculate session progress based on drawn and available cards
@@ -84,7 +84,7 @@ export const checkLevelProgression = (session, cardsPerLevel = 5) => {
   const currentLevel = session.currentLevel || 1;
   const targetLevel = Math.min(
     Math.floor(completedCount / cardsPerLevel) + 1,
-    CONNECTION_LEVELS.DEEP
+    CARD_CONNECTION_LEVELS.DEEP
   );
 
   return {
