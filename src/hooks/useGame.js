@@ -39,9 +39,6 @@ export const useGame = () => {
     dispatch(gameActions.endSessionRequest({ sessionId }));
   };
 
-  const getSessionStats = (sessionId) => {
-    dispatch(gameActions.getSessionStatsRequest({ sessionId }));
-  };
 
   const clearSession = () => {
     dispatch(gameActions.clearSession());
@@ -75,7 +72,6 @@ export const useGame = () => {
     completeCard,
     skipCard,
     endSession,
-    getSessionStats,
     clearSession,
     clearError,
   };

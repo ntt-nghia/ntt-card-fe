@@ -17,7 +17,6 @@ import { useAuth } from '@hooks/useAuth';
 import { useUser } from '@hooks/useUser';
 import { useDecks } from '@hooks/useDecks';
 import { useGame } from '@hooks/useGame';
-import { useControlledEffect, useControlledDispatch } from '@hooks/useControlledEffect';
 import Button from '@components/common/Button';
 import Loading from '@components/common/Loading';
 import { RELATIONSHIP_TYPES } from '@utils/constants';
@@ -27,7 +26,6 @@ const Dashboard = () => {
   const { user } = useAuth();
   const {
     statistics,
-    getStatistics,
     isLoading: userLoading,
     error: userError,
     clearError: clearUserError,
@@ -35,51 +33,14 @@ const Dashboard = () => {
 
   const {
     filteredDecks,
-    getAllDecks,
     isLoading: decksLoading,
     error: decksError,
     clearError: clearDecksError,
   } = useDecks();
 
   const { startSession, isLoading: gameLoading } = useGame();
-
-  const [selectedRelationshipType, setSelectedRelationshipType] = useState(null);
   const [hasTriedLoading, setHasTriedLoading] = useState(false);
 
-  // Use controlled dispatch to prevent spam
-  const { safeDispatch } = useControlledDispatch(
-    (action) => {
-      if (action.type === 'GET_STATISTICS') {
-        getStatistics();
-      } else if (action.type === 'GET_DECKS') {
-        getAllDecks();
-      }
-    },
-    {
-      cooldown: 2000, // 2 seconds between same requests
-      maxAttempts: 3,
-    }
-  );
-
-  useControlledEffect(
-    () => {
-      if (hasTriedLoading) return;
-
-      console.log('Dashboard: Loading initial data...');
-      setHasTriedLoading(true);
-
-      safeDispatch({ type: 'GET_STATISTICS' });
-      setTimeout(() => {
-        safeDispatch({ type: 'GET_DECKS' });
-      }, 500);
-    },
-    [user?.uid ? user.uid : null],
-    {
-      enabled: !!user?.uid && !hasTriedLoading,
-      maxExecutions: 1,
-      cooldown: 5000,
-    }
-  );
 
   const relationshipTypeData = [
     {

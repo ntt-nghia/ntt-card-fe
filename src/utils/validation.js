@@ -1,4 +1,4 @@
-import { RELATIONSHIP_TYPES, CARD_TYPES, DECK_TIERS } from './constants';
+import { CARD_TYPES, DECK_TIERS, RELATIONSHIP_TYPES } from './constants';
 
 /**
  * Email validation regex pattern
@@ -147,7 +147,7 @@ export const validateDisplayName = (displayName) => {
       errors.push('Display name must be less than 50 characters');
     } else if (!/^[a-zA-Z0-9\s\-_.]+$/.test(trimmed)) {
       errors.push(
-        'Display name can only contain letters, numbers, spaces, hyphens, underscores, and periods'
+        'Display name can only contain letters, numbers, spaces, hyphens, underscores, and periods',
       );
     }
   }

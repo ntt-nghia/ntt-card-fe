@@ -1,14 +1,14 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {AlertCircle, Edit3, Globe, Save, TrendingUp, User, X} from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { AlertCircle, Edit3, Globe, Save, TrendingUp, User, X } from 'lucide-react';
 
-import {useAuth} from '@hooks/useAuth';
-import {useUser} from '@hooks/useUser';
-import {useErrorHandler} from '@hooks/useErrorHandler';
+import { useAuth } from '@hooks/useAuth';
+import { useUser } from '@hooks/useUser';
+import { useErrorHandler } from '@hooks/useErrorHandler';
 import Button from '@components/common/Button';
 import ErrorBoundary from '@components/common/ErrorBoundary';
 
 const Profile = () => {
-  const {user} = useAuth();
+  const { user } = useAuth();
   const userIdRef = useRef(user?.uid);
 
   const {
@@ -25,7 +25,7 @@ const Profile = () => {
     clearError,
   } = useUser();
 
-  const {handleAsyncError} = useErrorHandler();
+  const { handleAsyncError } = useErrorHandler();
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -101,7 +101,7 @@ const Profile = () => {
         async () => {
           // Update profile data
           if (editForm.displayName !== user?.displayName) {
-            await updateProfile({displayName: editForm.displayName});
+            await updateProfile({ displayName: editForm.displayName });
           }
 
           // Update language if changed
@@ -111,7 +111,7 @@ const Profile = () => {
 
           setIsEditing(false);
         },
-        {context: 'profile_update'}
+        { context: 'profile_update' },
       );
     } catch (error) {
       // Error is handled by useErrorHandler
@@ -134,11 +134,11 @@ const Profile = () => {
   };
 
   const handleFormChange = (field, value) => {
-    setEditForm((prev) => ({...prev, [field]: value}));
+    setEditForm((prev) => ({ ...prev, [field]: value }));
     // Clear error for this field
     if (formErrors[field]) {
       setFormErrors((prev) => {
-        const newErrors = {...prev};
+        const newErrors = { ...prev };
         delete newErrors[field];
         return newErrors;
       });
@@ -165,13 +165,13 @@ const Profile = () => {
         {error && (
           <div className="mb-6 rounded-md border border-error-200 bg-error-50 px-4 py-3 text-error-700">
             <div className="flex items-center">
-              <AlertCircle className="mr-2 h-5 w-5"/>
+              <AlertCircle className="mr-2 h-5 w-5" />
               <span>{error}</span>
               <button
                 onClick={clearError}
                 className="ml-auto text-error-500 hover:text-error-700"
               >
-                <X className="h-4 w-4"/>
+                <X className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -183,7 +183,7 @@ const Profile = () => {
             <div className="mb-6 flex items-start justify-between">
               <div className="flex items-center space-x-4">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-100">
-                  <User className="h-8 w-8 text-primary-600"/>
+                  <User className="h-8 w-8 text-primary-600" />
                 </div>
                 <div>
                   {isEditing ? (
@@ -205,7 +205,7 @@ const Profile = () => {
                         )}
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Globe className="h-4 w-4 text-gray-500"/>
+                        <Globe className="h-4 w-4 text-gray-500" />
                         <select
                           value={editForm.language}
                           onChange={(e) => handleFormChange('language', e.target.value)}
@@ -237,7 +237,7 @@ const Profile = () => {
                             : 'Unknown'}
                         </span>
                         <span className="flex items-center">
-                          <Globe className="mr-1 h-4 w-4"/>
+                          <Globe className="mr-1 h-4 w-4" />
                           {user?.language === 'vn' ? 'Tiếng Việt' : 'English'}
                         </span>
                       </div>
@@ -254,7 +254,7 @@ const Profile = () => {
                       size="sm"
                       onClick={handleCancelEdit}
                       disabled={isSaving}
-                      leftIcon={<X className="h-4 w-4"/>}
+                      leftIcon={<X className="h-4 w-4" />}
                     >
                       Cancel
                     </Button>
@@ -263,7 +263,7 @@ const Profile = () => {
                       onClick={handleSaveProfile}
                       loading={isSaving}
                       disabled={isSaving}
-                      leftIcon={<Save className="h-4 w-4"/>}
+                      leftIcon={<Save className="h-4 w-4" />}
                     >
                       Save Changes
                     </Button>
@@ -273,7 +273,7 @@ const Profile = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => setIsEditing(true)}
-                    leftIcon={<Edit3 className="h-4 w-4"/>}
+                    leftIcon={<Edit3 className="h-4 w-4" />}
                   >
                     Edit Profile
                   </Button>
@@ -312,7 +312,7 @@ const Profile = () => {
               {/* Relationship Usage */}
               <div className="card p-6">
                 <h2 className="mb-6 flex items-center font-heading text-xl font-bold text-gray-900">
-                  <TrendingUp className="mr-2 h-5 w-5"/>
+                  <TrendingUp className="mr-2 h-5 w-5" />
                   Relationship Types
                 </h2>
 
@@ -341,7 +341,7 @@ const Profile = () => {
                               className={`h-2 rounded-full transition-all duration-300 ${
                                 colors[type] || 'bg-gray-400'
                               }`}
-                              style={{width: `${percentage}%`}}
+                              style={{ width: `${percentage}%` }}
                             />
                           </div>
                         </div>
@@ -350,7 +350,7 @@ const Profile = () => {
                   </div>
                 ) : (
                   <div className="py-8 text-center text-gray-500">
-                    <TrendingUp className="mx-auto mb-4 h-12 w-12 text-gray-300"/>
+                    <TrendingUp className="mx-auto mb-4 h-12 w-12 text-gray-300" />
                     <p>No session data available yet.</p>
                     <p className="text-sm">Start a game to see your statistics!</p>
                   </div>
@@ -419,7 +419,7 @@ const Profile = () => {
         {totalSessions === 0 && !isLoading && (
           <div className="card bg-gradient-to-br from-primary-50 to-secondary-50 p-8 text-center">
             <div className="mb-4">
-              <User className="mx-auto h-16 w-16 text-primary-400"/>
+              <User className="mx-auto h-16 w-16 text-primary-400" />
             </div>
             <h3 className="mb-2 text-xl font-bold text-gray-900">Welcome to Connection Game!</h3>
             <p className="mb-6 text-gray-600">

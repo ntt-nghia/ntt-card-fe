@@ -1,5 +1,5 @@
 // src/hooks/useAdmin.js - Custom hook for admin functionality
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useCallback } from 'react';
 import { adminSelectors } from '@store/admin/adminSelectors';
 import { adminActions } from '@store/admin/adminSlice';

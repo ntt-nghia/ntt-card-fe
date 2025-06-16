@@ -1,5 +1,4 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { useEffect } from 'react';
 import { userSelectors } from '@store/user/userSelectors';
 import { userActions } from '@store/user/userSlice';
 

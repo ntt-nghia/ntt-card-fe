@@ -19,14 +19,6 @@ export const useDecks = () => {
     dispatch(deckActions.getAllDecksRequest({ filters, page }));
   };
 
-  const getDeckById = (deckId) => {
-    dispatch(deckActions.getDeckByIdRequest({ deckId }));
-  };
-
-  const getDeckCards = (deckId, filters) => {
-    dispatch(deckActions.getDeckCardsRequest({ deckId, filters }));
-  };
-
   const unlockDeck = (deckId, transactionId, paymentMethod = 'stripe') => {
     dispatch(
       deckActions.unlockDeckRequest({
@@ -35,10 +27,6 @@ export const useDecks = () => {
         paymentMethod,
       }),
     );
-  };
-
-  const getDeckStatistics = (deckId) => {
-    dispatch(deckActions.getDeckStatisticsRequest({ deckId }));
   };
 
   const setFilters = (newFilters) => {
@@ -84,10 +72,7 @@ export const useDecks = () => {
 
     // Actions
     getAllDecks,
-    getDeckById,
-    getDeckCards,
     unlockDeck,
-    getDeckStatistics,
     setFilters,
     loadMoreDecks,
     clearCurrentDeck,
