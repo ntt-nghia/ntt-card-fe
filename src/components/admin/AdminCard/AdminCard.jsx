@@ -1,4 +1,4 @@
-// src/components/admin/AdminCard/AdminCard.jsx
+// src/components/admin/AdminCard/AdminCard.jsx - Updated for edit integration
 import React, { useState } from 'react';
 import {
   Archive,
@@ -17,19 +17,19 @@ import {
 import Button from '@components/common/Button/index.js';
 
 const AdminCard = ({
-                     card,
-                     isSelected = false,
-                     onSelect = null,
-                     onEdit = null,
-                     onDelete = null,
-                     onView = null,
-                     onDuplicate = null,
-                     onArchive = null,
-                     showActions = true,
-                     showSelection = false,
-                     variant = 'default', // 'default', 'compact', 'masonry'
-                     className = '',
-                   }) => {
+  card,
+  isSelected = false,
+  onSelect = null,
+  onEdit = null,
+  onDelete = null,
+  onView = null,
+  onDuplicate = null,
+  onArchive = null,
+  showActions = true,
+  showSelection = false,
+  variant = 'default', // 'default', 'compact', 'masonry'
+  className = '',
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -37,14 +37,18 @@ const AdminCard = ({
   const isVariantMasonry = variant === 'masonry';
   const isVariantCompact = variant === 'compact';
 
-  // Format card content based on type
+  // Format card content based on type - Enhanced for better handling
   const formatCardContent = (content) => {
     if (typeof content === 'string') return content;
-    if (content?.en) return content.en;
+
+    // Handle multilingual content
     if (content && typeof content === 'object') {
+      // Prefer English, then first available language
+      if (content.en) return content.en;
       const firstKey = Object.keys(content)[0];
-      return content[firstKey];
+      if (firstKey) return content[firstKey];
     }
+
     return 'No content available';
   };
 
@@ -106,14 +110,59 @@ const AdminCard = ({
     ? cardContent
     : cardContent.substring(0, CUTTING_LENGTH);
 
-  // Action buttons for dropdown
+  // Action buttons for dropdown - Enhanced with better edit handling
   const actionButtons = [
-    { icon: Eye, label: 'View Details', onClick: onView, show: !!onView },
-    { icon: Edit, label: 'Edit Card', onClick: onEdit, show: !!onEdit },
-    { icon: Copy, label: 'Duplicate', onClick: onDuplicate, show: !!onDuplicate },
-    { icon: Archive, label: 'Archive', onClick: onArchive, show: !!onArchive },
-    { icon: Trash2, label: 'Delete', onClick: onDelete, show: !!onDelete, danger: true },
+    {
+      icon: Eye,
+      label: 'View Details',
+      onClick: onView,
+      show: !!onView
+    },
+    {
+      icon: Edit,
+      label: 'Edit Card',
+      onClick: onEdit,
+      show: !!onEdit,
+      primary: true // Mark edit as primary action
+    },
+    {
+      icon: Copy,
+      label: 'Duplicate',
+      onClick: onDuplicate,
+      show: !!onDuplicate
+    },
+    {
+      icon: Archive,
+      label: card.status === 'archived' ? 'Restore' : 'Archive',
+      onClick: onArchive,
+      show: !!onArchive
+    },
+    {
+      icon: Trash2,
+      label: 'Delete',
+      onClick: onDelete,
+      show: !!onDelete,
+      danger: true
+    },
   ].filter(action => action.show);
+
+  // Handle action clicks with proper event handling
+  const handleActionClick = (action, event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (action.onClick) {
+      action.onClick(card);
+    }
+    setShowDropdown(false);
+  };
+
+  // Handle dropdown toggle
+  const handleDropdownToggle = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setShowDropdown(!showDropdown);
+  };
 
   // Get background color based on relationship type
   const bgColor = card.relationshipTypes && card.relationshipTypes.length > 0
@@ -146,10 +195,14 @@ const AdminCard = ({
   return (
     <div className={`
       relative ${bgColor} rounded-lg border-2 transition-all duration-200 group
-      ${isSelected ? 'border-primary-500 ring-2 ring-primary-200' : 'border-gray-200 hover:border-gray-300'}
+      ${isSelected 
+        ? 'border-primary-500 ring-2 ring-primary-200' 
+        : 'border-gray-200 hover:border-gray-300'
+      }
       ${getCardSizeClasses()}
       ${className}
     `}>
+
 
       {/* Actions Dropdown */}
       {showActions && actionButtons.length > 0 && (
@@ -158,33 +211,43 @@ const AdminCard = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setShowDropdown(!showDropdown)}
-              className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 backdrop-blur-sm"
+              onClick={handleDropdownToggle}
+              className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 backdrop-blur-sm hover:bg-white"
             >
               <MoreVertical className="h-4 w-4" />
             </Button>
 
             {showDropdown && (
-              <div
-                className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-20">
-                {actionButtons.map((action, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      action.onClick?.(card);
-                      setShowDropdown(false);
-                    }}
-                    className={`
-                      w-full px-4 py-2 text-left text-sm flex items-center space-x-2 
-                      hover:bg-gray-50 transition-colors
-                      ${action.danger ? 'text-red-600 hover:text-red-700' : 'text-gray-700'}
-                    `}
-                  >
-                    <action.icon className="h-4 w-4" />
-                    <span>{action.label}</span>
-                  </button>
-                ))}
-              </div>
+              <>
+                {/* Backdrop to close dropdown */}
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setShowDropdown(false)}
+                />
+
+                {/* Dropdown menu */}
+                <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-20">
+                  {actionButtons.map((action, index) => (
+                    <button
+                      key={index}
+                      onClick={(e) => handleActionClick(action, e)}
+                      className={`
+                        w-full px-4 py-2 text-left text-sm flex items-center space-x-2 
+                        hover:bg-gray-50 transition-colors
+                        ${action.danger 
+                          ? 'text-red-600 hover:text-red-700 hover:bg-red-50' 
+                          : action.primary
+                          ? 'text-primary-600 hover:text-primary-700 hover:bg-primary-50'
+                          : 'text-gray-700'
+                        }
+                      `}
+                    >
+                      <action.icon className="h-4 w-4 flex-shrink-0" />
+                      <span>{action.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -234,7 +297,10 @@ const AdminCard = ({
           {/* Expand/Collapse for long content (not shown in masonry) */}
           {isLongContent && !isVariantMasonry && (
             <button
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsExpanded(!isExpanded);
+              }}
               className="mt-2 flex items-center text-xs text-primary-600 hover:text-primary-700 font-medium"
             >
               {isExpanded ? (
@@ -272,15 +338,27 @@ const AdminCard = ({
               )}
             </div>
 
-            {card.createdAt && card.createdAt._seconds && (
+            {card.createdAt && (
               <div className="flex items-center">
                 <Clock className="h-3 w-3 mr-1" />
                 <span>
-                  {new Date(card.createdAt._seconds * 1000).toLocaleDateString('vn-VI', {
-                    day: '2-digit',
-                    year: 'numeric',
-                    month: 'long',
-                  })}
+                  {(() => {
+                    // Handle different date formats
+                    let date;
+                    if (card.createdAt._seconds) {
+                      date = new Date(card.createdAt._seconds * 1000);
+                    } else if (card.createdAt.toDate) {
+                      date = card.createdAt.toDate();
+                    } else {
+                      date = new Date(card.createdAt);
+                    }
+
+                    return date.toLocaleDateString('en-US', {
+                      day: '2-digit',
+                      year: 'numeric',
+                      month: 'short',
+                    });
+                  })()}
                 </span>
               </div>
             )}
@@ -288,8 +366,8 @@ const AdminCard = ({
         </div>
       </div>
 
-      {/* Click overlay for selection */}
-      {showSelection && (
+      {/* Click overlay for selection - Only show if selection is enabled and actions aren't being used */}
+      {showSelection && !showDropdown && (
         <div
           className="absolute inset-0 cursor-pointer"
           onClick={() => onSelect?.(card.id, !isSelected)}
